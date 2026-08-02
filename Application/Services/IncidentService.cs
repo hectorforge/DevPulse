@@ -77,7 +77,7 @@ public class IncidentService : IIncidentService
             totalCount, items.Count(), page);
 
         return items.Select(i => new IncidentDto(
-            i.Id, i.Title, i.Severity.ToString(), i.Status.ToString(), i.CreatedAt));
+            i.Id, i.Title, i.Severity.ToString(), i.Status.ToString(), i.AuditRecord.CreatedAt));
     }
 
     public async Task<Result<IncidentDto>> GetByIdAsync(Guid id)
@@ -92,7 +92,7 @@ public class IncidentService : IIncidentService
             return Result<IncidentDto>.Failure($"No se encontró el incidente con ID: {id}");
         }
 
-        return Result<IncidentDto>.Success(new IncidentDto(incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.CreatedAt));
+        return Result<IncidentDto>.Success(new IncidentDto(incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.AuditRecord.CreatedAt));
     }
 
     public async Task<Result<IncidentDto>> UpdateIncidentAsync(UpdateIncidentRequest request)
@@ -132,7 +132,7 @@ public class IncidentService : IIncidentService
         _logger.LogInformation("Incidente {IncidentId} actualizado correctamente.", incident.Id);
 
         return Result<IncidentDto>.Success(new IncidentDto(
-                incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.CreatedAt));
+                incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.AuditRecord.CreatedAt));
     }
 
     public async Task<Result<IncidentDto>> DeleteIncidentAsync(Guid id)
@@ -153,6 +153,6 @@ public class IncidentService : IIncidentService
         _logger.LogCritical("Incidente eliminado definitivamente: {IncidentId} - Título: {Title}", id, incident.Title);
         
         return Result<IncidentDto>.Success(new IncidentDto(
-                incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.CreatedAt));
+                incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.AuditRecord.CreatedAt));
     }
 }
