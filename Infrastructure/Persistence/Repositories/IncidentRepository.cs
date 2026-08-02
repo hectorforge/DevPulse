@@ -35,7 +35,7 @@ public class IncidentRepository : IIncidentRepository
         
         var items = await query
             .AsNoTracking()
-            .OrderByDescending(i => i.CreatedAt)
+            .OrderByDescending(i => i.AuditRecord.CreatedAt)
             .Skip((page - 1) * size)
             .Take(size)
             .ToListAsync(ct);
