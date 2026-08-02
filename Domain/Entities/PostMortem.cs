@@ -1,9 +1,13 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Domain.Entities;
 
 public class PostMortem
 {
-    public string RootCause { get; set; }
-    public string LessonsLearned { get; set; }
+    [Key]
+    public string RootCause { get; set; }  = string.Empty;
+    public string LessonsLearned { get; set; } = string.Empty;
     public Guid IncidentId { get; set; }
-    public Incident Incident { get; set; }
+    
+    public Incident Incident { get; set; } = null!; 
 }

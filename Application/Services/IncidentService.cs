@@ -5,6 +5,7 @@ using Domain.Common;
 using Domain.Entities;
 using Domain.Enums;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 using Severity = Domain.Enums.Severity;
 
 namespace Application.Services;
@@ -12,48 +13,68 @@ namespace Application.Services;
 public class IncidentService : IIncidentService
 {
     private readonly IIncidentRepository _repository;
-    private readonly IValidator<CreateIncidentRequest> _validator;
+    private readonly IValidator<CreateIncidentRequest> _createValidator;
+    private readonly IValidator<UpdateIncidentRequest> _updateValidator;
+    private readonly ILogger<IncidentService> _logger;
 
-    public IncidentService(IIncidentRepository repository, IValidator<CreateIncidentRequest> validator)
+    public IncidentService(
+        IIncidentRepository repository, 
+        IValidator<CreateIncidentRequest> createValidator, 
+        IValidator<UpdateIncidentRequest> updateValidator, 
+        ILogger<IncidentService> logger)
     {
         _repository = repository;
-        _validator = validator;
+        _createValidator = createValidator;
+        _updateValidator = updateValidator;
+        _logger = logger;
     }
 
     public async Task<Result<Guid>> CreateIncidentAsync(CreateIncidentRequest request)
     {
-        var validationResult = await _validator.ValidateAsync(request);
+        _logger.LogInformation("Iniciando creación de incidente: {Title} con Severidad: {Severity}", request.Title, request.Severity);
+
+        var validationResult = await _createValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
-            var errors = validationResult.Errors
-                .ToDictionary(
-                    e => e.PropertyName,
-                    e => e.ErrorMessage
-                );
+            _logger.LogWarning("Validación fallida para la creación del incidente. Errores: {Errors}", 
+                string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
 
-            return Result<Guid>.Failure(
-                "La solicitud contiene errores de validación.",
-                errors
-            );
+            var errors = validationResult.Errors.ToDictionary(e => e.PropertyName, e => e.ErrorMessage);
+            return Result<Guid>.Failure("La solicitud contiene errores de validación.", errors);
         }
 
-        var incident = new Incident
+        try
         {
-            Title = request.Title,
-            Description = request.Description,
-            Severity = (Severity)request.Severity,
-            Status = IncidentStatus.Reported
-        };
+            var incident = new Incident
+            {
+                Title = request.Title,
+                Description = request.Description,
+                Severity = (Severity)request.Severity,
+                Status = IncidentStatus.Reported
+            };
 
-        await _repository.AddAsync(incident);
-        await _repository.SaveChangesAsync();
+            await _repository.AddAsync(incident);
+            await _repository.SaveChangesAsync();
 
-        return Result<Guid>.Success(incident.Id);
+            _logger.LogInformation("Incidente creado exitosamente con ID: {IncidentId}", incident.Id);
+            return Result<Guid>.Success(incident.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error inesperado al persistir el incidente: {Title}", request.Title);
+            return Result<Guid>.Failure("Ocurrió un error interno al procesar su solicitud.");
+        }
     }
 
-    public async Task<IEnumerable<IncidentDto>> GetAllActiveIncidentsAsync(string name, Severity severity, int page, int size)
+    public async Task<IEnumerable<IncidentDto>> GetAllActiveIncidentsAsync(string? name, Severity? severity, int page, int size)
     {
-        var (items, _) = await _repository.GetPagedAsync(name, severity, page, size);
+        _logger.LogDebug("Consultando lista de incidentes paginada. Filtros - Nombre: {Name}, Severidad: {Severity}, Página: {Page}", 
+            name ?? "N/A", severity?.ToString() ?? "Todas", page);
+
+        var (items, totalCount) = await _repository.GetPagedAsync(name, severity, page, size);
+
+        _logger.LogInformation("Consulta completada. Se encontraron {TotalCount} incidentes totales. Retornando {CurrentCount} para la página {Page}", 
+            totalCount, items.Count(), page);
 
         return items.Select(i => new IncidentDto(
             i.Id, i.Title, i.Severity.ToString(), i.Status.ToString(), i.CreatedAt));
@@ -61,21 +82,44 @@ public class IncidentService : IIncidentService
 
     public async Task<Result<IncidentDto>> GetByIdAsync(Guid id)
     {
+        _logger.LogDebug("Buscando incidente por ID: {IncidentId}", id);
+
         var incident = await _repository.GetByIdAsync(id, track: false);
 
         if (incident == null)
+        {
+            _logger.LogWarning("Intento de lectura fallido: No se encontró el incidente con ID: {IncidentId}", id);
             return Result<IncidentDto>.Failure($"No se encontró el incidente con ID: {id}");
+        }
 
-        var dto = new IncidentDto(incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.CreatedAt);
-        return Result<IncidentDto>.Success(dto);
+        return Result<IncidentDto>.Success(new IncidentDto(incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.CreatedAt));
     }
 
     public async Task<Result<IncidentDto>> UpdateIncidentAsync(UpdateIncidentRequest request)
     {
+        _logger.LogInformation("Iniciando actualización del incidente: {IncidentId}", request.Id);
+
+        var validationResult = await _updateValidator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            _logger.LogWarning("Validación de actualización fallida para ID: {IncidentId}", request.Id);
+            var errors = validationResult.Errors.ToDictionary(e => e.PropertyName, e => e.ErrorMessage);
+            return Result<IncidentDto>.Failure("La solicitud contiene errores de validación.", errors);
+        }
+        
         var incident = await _repository.GetByIdAsync(request.Id);
 
         if (incident == null)
+        {
+            _logger.LogWarning("No se pudo actualizar: El incidente {IncidentId} no existe.", request.Id);
             return Result<IncidentDto>.Failure("Incidente no encontrado para actualizar.");
+        }
+        
+        if (incident.Status != (IncidentStatus)request.Status)
+        {
+            _logger.LogInformation("Cambio de estado detectado para {IncidentId}: {OldStatus} -> {NewStatus}", 
+                incident.Id, incident.Status, (IncidentStatus)request.Status);
+        }
         
         incident.Title = request.Title;
         incident.Description = request.Description;
@@ -85,29 +129,30 @@ public class IncidentService : IIncidentService
         _repository.Update(incident);
         await _repository.SaveChangesAsync();
 
+        _logger.LogInformation("Incidente {IncidentId} actualizado correctamente.", incident.Id);
+
         return Result<IncidentDto>.Success(new IncidentDto(
-                incident.Id, 
-                incident.Title, 
-                incident.Severity.ToString(), 
-                incident.Status.ToString(), 
-                incident.CreatedAt));
+                incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.CreatedAt));
     }
 
     public async Task<Result<IncidentDto>> DeleteIncidentAsync(Guid id)
     {
+        _logger.LogWarning("Iniciando proceso de eliminación para el incidente: {IncidentId}", id);
+
         var incident = await _repository.GetByIdAsync(id);
 
         if (incident == null)
+        {
+            _logger.LogError("Fallo al eliminar: El incidente {IncidentId} no fue encontrado.", id);
             return Result<IncidentDto>.Failure("El incidente no existe.");
+        }
 
         _repository.Delete(incident);
         await _repository.SaveChangesAsync();
+
+        _logger.LogCritical("Incidente eliminado definitivamente: {IncidentId} - Título: {Title}", id, incident.Title);
         
         return Result<IncidentDto>.Success(new IncidentDto(
-                incident.Id, 
-                incident.Title, 
-                incident.Severity.ToString(), 
-                incident.Status.ToString(), 
-                incident.CreatedAt));
+                incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.CreatedAt));
     }
 }

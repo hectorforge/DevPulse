@@ -50,29 +50,21 @@ public class IncidentRepository : IIncidentRepository
     {
         IQueryable<Incident> query = _context.Incidents;
 
-        // [PRO] Eager Loading condicional: Si necesitas datos relacionados (ej: PostMortem)
-        // query = query.Include(i => i.PostMortem); 
-
         if (!track)
         {
             query = query.AsNoTracking();
         }
-
-        // [PRO] FirstOrDefaultAsync es más rápido que FindAsync cuando usas IQueryable/AsNoTracking
+        
         return await query.FirstOrDefaultAsync(i => i.Id == id, ct);
     }
 
     public async Task AddAsync(Incident incident, CancellationToken ct = default)
     {
-        // [PRO] AddAsync solo es necesario si usas generadores de llaves especiales. 
-        // Para la mayoría de casos, _context.Add es suficiente, pero AddAsync es estándar en interfaces async.
         await _context.Incidents.AddAsync(incident, ct);
     }
 
     public void Update(Incident incident)
     {
-        // [PRO] No uses métodos async para Update/Delete. EF solo marca el estado de la entidad en memoria.
-        // El trabajo real lo hace SaveChangesAsync.
         _context.Incidents.Update(incident);
     }
 
