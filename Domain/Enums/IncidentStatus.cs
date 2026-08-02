@@ -4,7 +4,7 @@ public enum IncidentStatus
 {
     Reported,
     Open,
-    Investigating,
+    InProgress,
     Resolved,
     Closed
 }

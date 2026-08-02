@@ -79,8 +79,12 @@ Solo necesitas tener instalado **Docker** y **.NET 9 SDK**.
 
 3. **Ejecutar las migraciones y la App:**
    ```bash
-   dotnet ef database update --project src/DevPulse.Infrastructure --startup-project src/DevPulse.Web
-   dotnet run --project src/DevPulse.Web
+   
+   dotnet ef migrations add InitialCreate --project Infrastructure --startup-project Web
+   
+   dotnet ef database update --project Infrastructure --startup-project Web
+   
+   dotnet run --project Web
    ```
 
 4. **Acceder a la plataforma:**

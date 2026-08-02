@@ -39,6 +39,7 @@ public static class DbSeeder
         var incidentId3 = Guid.NewGuid();
         var incidentId4 = Guid.NewGuid();
 
+        /*
         var incidents = new List<Incident>
         {
             new Incident
@@ -148,6 +149,7 @@ public static class DbSeeder
         };
 
         await context.PostMortems.AddRangeAsync(postMortems);
+        */
         await context.SaveChangesAsync();
     }
 }

@@ -37,11 +37,7 @@ public class IndexModel : PageModel
     {
         _logger.LogInformation("Cargando Dashboard de Incidentes - Página: {Page}", CurrentPage);
         
-        Incidents = await _incidentService.GetAllActiveIncidentsAsync(
-            SearchName, 
-            FilterSeverity ?? default, 
-            CurrentPage, 
-            PageSize);
+        Incidents = await _incidentService.GetAllIncidentsAsync(new IncidentQueryDto(SearchName, FilterSeverity, CurrentPage, PageSize));
     }
     
     public async Task<IActionResult> OnPostDeleteAsync(Guid id)
@@ -59,5 +55,17 @@ public class IndexModel : PageModel
         }
 
         return RedirectToPage();
+    }
+    
+    public string GetSeverityBadgeClass(Severity severity)
+    {
+        return severity switch
+        {
+            Severity.High => "bg-danger",
+            Severity.Medium => "bg-warning text-dark",
+            Severity.Low => "bg-success",
+            Severity.Critical => "bg-dark",
+            _ => "bg-secondary"
+        };
     }
 }

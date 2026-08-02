@@ -1,5 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces;
+using Application.Mappings;
 using Application.Services.Interfaces;
 using Domain.Common;
 using Domain.Entities;
@@ -45,13 +46,11 @@ public class IncidentService : IIncidentService
 
         try
         {
-            var incident = new Incident
-            {
-                Title = request.Title,
-                Description = request.Description,
-                Severity = (Severity)request.Severity,
-                Status = IncidentStatus.Reported
-            };
+            var incident = Incident.Create(
+                request.Title,
+                request.Description,
+                request.Severity,
+                DateTime.UtcNow);
 
             await _repository.AddAsync(incident);
             await _repository.SaveChangesAsync();
@@ -66,18 +65,18 @@ public class IncidentService : IIncidentService
         }
     }
 
-    public async Task<IEnumerable<IncidentDto>> GetAllActiveIncidentsAsync(string? name, Severity? severity, int page, int size)
+    public async Task<IEnumerable<IncidentDto>> GetAllIncidentsAsync(IncidentQueryDto query)
     {
+        
         _logger.LogDebug("Consultando lista de incidentes paginada. Filtros - Nombre: {Name}, Severidad: {Severity}, Página: {Page}", 
-            name ?? "N/A", severity?.ToString() ?? "Todas", page);
+            query.name ?? "N/A", query.severity?.ToString() ?? "Todas", query.page);
 
-        var (items, totalCount) = await _repository.GetPagedAsync(name, severity, page, size);
+        var (items, totalCount) = await _repository.GetPagedAsync(query.name, query.severity, query.page, query.size);
 
         _logger.LogInformation("Consulta completada. Se encontraron {TotalCount} incidentes totales. Retornando {CurrentCount} para la página {Page}", 
-            totalCount, items.Count(), page);
+            totalCount, items.Count(), query.page);
 
-        return items.Select(i => new IncidentDto(
-            i.Id, i.Title, i.Severity.ToString(), i.Status.ToString(), i.AuditRecord.CreatedAt));
+        return items.ToDtoList();
     }
 
     public async Task<Result<IncidentDto>> GetByIdAsync(Guid id)
@@ -92,7 +91,7 @@ public class IncidentService : IIncidentService
             return Result<IncidentDto>.Failure($"No se encontró el incidente con ID: {id}");
         }
 
-        return Result<IncidentDto>.Success(new IncidentDto(incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.AuditRecord.CreatedAt));
+        return Result<IncidentDto>.Success(incident.ToDto());
     }
 
     public async Task<Result<IncidentDto>> UpdateIncidentAsync(UpdateIncidentRequest request)
@@ -121,18 +120,18 @@ public class IncidentService : IIncidentService
                 incident.Id, incident.Status, (IncidentStatus)request.Status);
         }
         
-        incident.Title = request.Title;
-        incident.Description = request.Description;
-        incident.Severity = (Severity)request.Severity;
-        incident.Status = (IncidentStatus)request.Status;
+        
+        incident.ChangeTitle(request.Title);
+        incident.ChangeDescription(request.Description);
+        incident.ChangeSeverity(request.Severity);
+        incident.ChangeStatus(request.Status);
 
         _repository.Update(incident);
         await _repository.SaveChangesAsync();
 
         _logger.LogInformation("Incidente {IncidentId} actualizado correctamente.", incident.Id);
 
-        return Result<IncidentDto>.Success(new IncidentDto(
-                incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.AuditRecord.CreatedAt));
+        return Result<IncidentDto>.Success(incident.ToDto());
     }
 
     public async Task<Result<IncidentDto>> DeleteIncidentAsync(Guid id)
@@ -152,7 +151,6 @@ public class IncidentService : IIncidentService
 
         _logger.LogCritical("Incidente eliminado definitivamente: {IncidentId} - Título: {Title}", id, incident.Title);
         
-        return Result<IncidentDto>.Success(new IncidentDto(
-                incident.Id, incident.Title, incident.Severity.ToString(), incident.Status.ToString(), incident.AuditRecord.CreatedAt));
+        return Result<IncidentDto>.Success(incident.ToDto());
     }
 }

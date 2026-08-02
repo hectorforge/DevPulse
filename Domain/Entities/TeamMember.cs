@@ -10,5 +10,7 @@ public class TeamMember : IAuditable<SimpleAuditRecord>
     public string Email { get; set; } = string.Empty;
     public Role Role { get; set; }
 
+    public ICollection<Incident> Incidents { get; set; } = new List<Incident>();
+    
     public SimpleAuditRecord AuditRecord { get; set; } = new();
 }
