@@ -13,6 +13,7 @@ public static class DependencyInjection
         this IServiceCollection services)
     {
         services.AddScoped<IIncidentService, IncidentService>();
+        services.AddScoped<ITeamMemberService, TeamMemberService>();
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         
         return services;

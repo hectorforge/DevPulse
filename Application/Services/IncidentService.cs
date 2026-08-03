@@ -7,7 +7,6 @@ using Domain.Entities;
 using Domain.Enums;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using Severity = Domain.Enums.Severity;
 
 namespace Application.Services;
 
