@@ -1,20 +1,23 @@
-@model Application.DTOs.AssignIncidentRequest
+@model Web.ViewModels.Incidents.AssignMemberViewModel;
+
 <div class="modal-header bg-primary text-white">
     <h5 class="modal-title">Asignar Responsable</h5>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 </div>
+
 <form asp-page-handler="Assign" id="incidentForm" method="post">
     <div class="modal-body">
-        <input type="hidden" asp-for="IncidentId" />
-        <p>Asignando técnico para el incidente: <strong>@ViewData["IncidentTitle"]</strong></p>
+        <input type="hidden" asp-for="Request.IncidentId" />
+        
+        <p>Asignando técnico para el incidente: <strong>@Model.IncidentTitle</strong></p>
         
         <div class="mb-3">
             <label class="form-label fw-bold">Seleccionar Miembro del Equipo</label>
-            <select asp-for="TeamMemberId" class="form-select" 
-                    asp-items="@((IEnumerable<SelectListItem>)ViewContext.Values["TeamMemberOptions"] ?? (IEnumerable<SelectListItem>)((Web.Pages.Incidents.IndexModel)ViewContext.ViewData.Model).TeamMemberOptions)">
+            <select asp-for="Request.TeamMemberId" class="form-select" 
+                    asp-items="Model.TeamMemberOptions">
                 <option value="">-- Seleccione un técnico --</option>
             </select>
-            <span asp-validation-for="TeamMemberId" class="text-danger"></span>
+            <span asp-validation-for="Request.TeamMemberId" class="text-danger"></span>
         </div>
     </div>
     <div class="modal-footer">

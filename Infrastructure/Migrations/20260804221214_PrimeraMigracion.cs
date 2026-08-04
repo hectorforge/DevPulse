@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class PrimeraMigracion : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,7 +20,9 @@ namespace Infrastructure.Migrations
                     Email = table.Column<string>(type: "text", nullable: false),
                     Role = table.Column<int>(type: "integer", nullable: false),
                     AuditRecord_CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    AuditRecord_LastModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    AuditRecord_LastModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    AuditRecord_CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    AuditRecord_LastModifiedBy = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -40,10 +42,10 @@ namespace Infrastructure.Migrations
                     ExpectedResolutionAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ResolvedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     AssignedToId = table.Column<Guid>(type: "uuid", nullable: true),
-                    AuditRecord_CreatedBy = table.Column<string>(type: "text", nullable: true),
-                    AuditRecord_LastModifiedBy = table.Column<string>(type: "text", nullable: true),
                     AuditRecord_CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    AuditRecord_LastModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    AuditRecord_LastModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    AuditRecord_CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    AuditRecord_LastModifiedBy = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -63,10 +65,10 @@ namespace Infrastructure.Migrations
                     RootCause = table.Column<string>(type: "text", nullable: false),
                     LessonsLearned = table.Column<string>(type: "text", nullable: false),
                     IncidentId = table.Column<Guid>(type: "uuid", nullable: false),
-                    AuditRecord_CreatedBy = table.Column<string>(type: "text", nullable: true),
-                    AuditRecord_LastModifiedBy = table.Column<string>(type: "text", nullable: true),
                     AuditRecord_CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    AuditRecord_LastModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    AuditRecord_LastModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    AuditRecord_CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    AuditRecord_LastModifiedBy = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {

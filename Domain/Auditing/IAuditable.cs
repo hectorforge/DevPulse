@@ -1,6 +1,6 @@
 namespace Domain.Common;
 
-public interface IAuditable<TAudit> where TAudit : SimpleAuditRecord
+public interface IAuditable 
 {
-    TAudit AuditRecord { get; set; }
+    AuditRecord AuditRecord { get; set; }
 }

@@ -187,7 +187,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.TeamMember", b =>
                 {
-                    b.OwnsOne("Domain.Common.SimpleAuditRecord", "AuditRecord", b1 =>
+                    b.OwnsOne("Domain.Common.AuditRecord", "AuditRecord", b1 =>
                         {
                             b1.Property<Guid>("TeamMemberId")
                                 .HasColumnType("uuid");
@@ -195,8 +195,14 @@ namespace Infrastructure.Migrations
                             b1.Property<DateTime>("CreatedAt")
                                 .HasColumnType("timestamp with time zone");
 
+                            b1.Property<string>("CreatedBy")
+                                .HasColumnType("text");
+
                             b1.Property<DateTime>("LastModifiedAt")
                                 .HasColumnType("timestamp with time zone");
+
+                            b1.Property<string>("LastModifiedBy")
+                                .HasColumnType("text");
 
                             b1.HasKey("TeamMemberId");
 

@@ -1,55 +1,61 @@
-@using Application.Mappings
 @using Domain.Enums
-@model Application.DTOs.UpdateTeamMemberDto
+@using Application.Mappings
+@model dynamic
 
 @{
+    bool isEdit = Model.Id != Guid.Empty;
+
     var roleOptions = Enum.GetValues<Role>().Select(r => new SelectListItem
     {
-        Text = r.ToFriendlyString(), 
-        Value = r.ToString() 
+        Text = r.ToFriendlyString(),
+        Value = r.ToString()
     });
 }
- 
-<form asp-page-handler="@(Model.Id == Guid.Empty ? "Create" : "Edit")" id="teamMemberForm" method="post">
+
+<form asp-page-handler="@(isEdit ? "Edit" : "Create")" id="teamMemberForm" method="post">
     @Html.AntiForgeryToken()
-    <div class="modal-header">
-        <h5 class="modal-title">@(Model.Id == Guid.Empty ? "Nuevo Miembro" : "Editar Miembro")</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-    </div>
     
+    <div class="modal-header @(isEdit ? "bg-warning text-dark" : "bg-primary text-white")">
+        <h5 class="modal-title">
+            <i class="bi @(isEdit ? "bi-pencil-square" : "bi-person-plus")"></i>
+            @(isEdit ? "Editar Miembro" : "Nuevo Miembro del Equipo")
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+
     <div class="modal-body">
-        @if (Model.Id != Guid.Empty)
+        @if (isEdit)
         {
-            <input type="hidden" asp-for="Id" />
+            <input type="hidden" name="Id" value="@Model.Id" />
         }
-        
+
         <div class="mb-3">
-            <label asp-for="Name" class="form-label font-weight-bold">Nombre</label>
-            <input asp-for="Name" class="form-control" placeholder="Nombre completo" />
-            <span asp-validation-for="Name" class="text-danger small"></span>
+            <label class="form-label fw-bold">Nombre Completo</label>
+            <input name="Name" value="@Model.Name" class="form-control" placeholder="Ej. Juan Pérez" />
+            <span data-valmsg-for="Name" class="text-danger small"></span>
         </div>
 
         <div class="mb-3">
-            <label asp-for="Email" class="form-label font-weight-bold">Correo Electrónico</label>
-            <input asp-for="Email" class="form-control" placeholder="ejemplo@empresa.com" />
-            <span asp-validation-for="Email" class="text-danger small"></span>
+            <label class="form-label fw-bold">Correo Electrónico</label>
+            <input name="Email" type="email" value="@Model.Email" class="form-control" placeholder="correo@empresa.com" />
+            <span data-valmsg-for="Email" class="text-danger small"></span>
         </div>
 
         <div class="mb-3">
-            <label asp-for="Role" class="form-label font-weight-bold">Rol en el equipo</label>
-            <select asp-for="Role" class="form-select" asp-items="roleOptions">
-                <option value="">-- Seleccione un Rol --</option>
+            <label class="form-label fw-bold">Rol en el Equipo</label>
+            <select name="Role" class="form-select" asp-items="roleOptions">
+                @if (!isEdit) { <option value="">-- Seleccione un Rol --</option> }
             </select>
-            <span asp-validation-for="Role" class="text-danger small"></span>
+            <span data-valmsg-for="Role" class="text-danger small"></span>
         </div>
-        
-        <div id="errorSummary" class="alert alert-danger d-none mt-2" role="alert"></div>
+
+        <div id="errorSummary" class="alert alert-danger d-none mt-2"></div>
     </div>
 
     <div class="modal-footer bg-light">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" class="btn btn-primary px-4">
-            @(Model.Id == Guid.Empty ? "Crear Miembro" : "Guardar Cambios")
+        <button type="submit" class="btn @(isEdit ? "btn-warning" : "btn-primary") px-4">
+            @(isEdit ? "Guardar Cambios" : "Crear Miembro")
         </button>
     </div>
 </form>

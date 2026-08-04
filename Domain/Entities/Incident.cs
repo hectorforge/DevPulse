@@ -3,7 +3,7 @@ using Domain.Enums;
 
 namespace Domain.Entities;
 
-public class Incident : IAuditable<AuditRecord>
+public class Incident : IAuditable
 {
     public Guid Id { get; private set; }
     public string Title { get; private set; }

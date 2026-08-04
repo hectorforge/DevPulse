@@ -3,7 +3,7 @@ using Domain.Enums;
 
 namespace Domain.Entities;
 
-public class TeamMember : IAuditable<SimpleAuditRecord>
+public class TeamMember : IAuditable
 {
     public Guid Id { get; private set; }
     public string Name { get; private set; }
@@ -12,7 +12,7 @@ public class TeamMember : IAuditable<SimpleAuditRecord>
 
     public ICollection<Incident> Incidents { get; set; } = new List<Incident>();
     
-    public SimpleAuditRecord AuditRecord { get; set; } = new();
+    public AuditRecord AuditRecord { get; set; } = new();
 
     private TeamMember()
     {

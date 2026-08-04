@@ -21,42 +21,33 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+    public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;
         
-        var entries  = ChangeTracker
-            .Entries().Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+        var entries = ChangeTracker.Entries<IAuditable>()
+            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
 
         foreach (var entry in entries)
         {
-            var auditProp = entry.Entity.GetType().GetProperty("AuditRecord");
-
-            if (auditProp != null)
+            var audit = entry.Entity.AuditRecord;
+            
+            if (audit == null) 
             {
-                var auditValue = auditProp.GetValue(entry.Entity) as SimpleAuditRecord;
-
-                if (auditValue != null)
-                {
-                    if (entry.State == EntityState.Added)
-                    {
-                        auditValue.CreatedAt = now;
-                    }
-
-                    auditValue.LastModifiedAt = now;
-                }
-                
-                if (auditValue is AuditRecord fullAudit)
-                {
-                    if (entry.State == EntityState.Added)
-                    {
-                        fullAudit.CreatedBy = _currentUser;
-                    }
-                    fullAudit.LastModifiedBy = _currentUser;
-                }
+                audit = new AuditRecord();
+                entry.Entity.AuditRecord = audit;
             }
+
+            if (entry.State == EntityState.Added)
+            {
+                audit.CreatedAt = now;
+                audit.CreatedBy = _currentUser;
+            }
+
+            audit.LastModifiedAt = now;
+            audit.LastModifiedBy = _currentUser;
         }
-        
-        return await base.SaveChangesAsync(cancellationToken);
+
+        return await base.SaveChangesAsync(ct);
     }
 }

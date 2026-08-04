@@ -68,6 +68,7 @@ public class IndexModel : PageModel
     }
     
     #region Modales
+    /*
     public PartialViewResult OnGetCreateModal()
     {
         return new PartialViewResult
@@ -78,6 +79,16 @@ public class IndexModel : PageModel
                 ViewData,
                 new UpdateTeamMemberDto(Guid.Empty, "", "", Role.Developer))
         };
+    }*/
+    
+    public PartialViewResult OnGetCreateModal()
+    {
+        var emptyMember = new UpdateTeamMemberDto(Guid.Empty, "", "", Role.Developer);
+        return new PartialViewResult
+        {
+            ViewName = "_TeamMemberModal",
+            ViewData = new ViewDataDictionary<UpdateTeamMemberDto>(ViewData, emptyMember)
+        };
     }
     
     public async Task<PartialViewResult> OnGetDeleteModal(Guid id)
@@ -86,12 +97,31 @@ public class IndexModel : PageModel
         return Partial("_DeleteMemberModal", result.Value);
     }
     
+    /*
     public async Task<PartialViewResult> OnGetEditModal(Guid id)
     {
         var result = await _teamMemberService.GetById(id);
         var member = result.Value;
         var updateDto = new UpdateTeamMemberDto(member.Id, member.Name, member.Email, Enum.Parse<Role>(member.Role));
         return Partial("_TeamMemberModal", updateDto);
+    }*/
+    public async Task<PartialViewResult> OnGetEditModal(Guid id)
+    {
+        var result = await _teamMemberService.GetById(id);
+        var member = result.Value;
+        
+        var updateDto = new UpdateTeamMemberDto(
+            member.Id, 
+            member.Name, 
+            member.Email, 
+            Enum.Parse<Role>(member.Role)
+        );
+
+        return new PartialViewResult
+        {
+            ViewName = "_TeamMemberModal",
+            ViewData = new ViewDataDictionary<UpdateTeamMemberDto>(ViewData, updateDto)
+        };
     }
     #endregion
 

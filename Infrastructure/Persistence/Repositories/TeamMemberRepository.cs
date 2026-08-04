@@ -12,6 +12,8 @@ public class TeamMemberRepository : ITeamMemberRepository
 
     public TeamMemberRepository(AppDbContext context) => _context = context;
 
+    
+    
     public async Task<(IEnumerable<TeamMember> Items, int TotalCount)> GetPagedAsync(
         string? searchTerm, 
         Role? role, 
@@ -43,6 +45,11 @@ public class TeamMemberRepository : ITeamMemberRepository
             .ToListAsync(ct);
 
         return (items, totalCount);
+    }
+
+    public async Task<IEnumerable<TeamMember>> GetAllAsync(CancellationToken ct = default)
+    {
+        return await _context.TeamMembers.ToListAsync(ct);
     }
 
     public async Task<TeamMember?> GetByIdAsync(

@@ -1,12 +1,11 @@
 using Application.DTOs;
-using Application.Interfaces; // Para ITeamMemberRepository
-using Application.Mappings;
+using Application.Interfaces;
 using Application.Services.Interfaces;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Web.ViewModels.Incidents;
 
 namespace Web.Pages.Incidents;
 
@@ -21,8 +20,6 @@ public class IndexModel : PageModel
         _teamMemberRepository = teamMemberRepository;
     }
 
-    public IEnumerable<IncidentDto> Incidents { get; set; } = new List<IncidentDto>();
-
     [BindProperty(SupportsGet = true)] public string? SearchName { get; set; }
     [BindProperty(SupportsGet = true)] public Severity? FilterSeverity { get; set; }
     [BindProperty(SupportsGet = true)] public int CurrentPage { get; set; } = 1;
@@ -30,6 +27,8 @@ public class IndexModel : PageModel
     public int PageSize { get; set; } = 10;
     public int TotalRecords { get; set; }
     public int TotalPages => (int)Math.Ceiling((double)TotalRecords / PageSize);
+    
+    public IEnumerable<IncidentDto> Incidents { get; set; } = new List<IncidentDto>();
     public IEnumerable<SelectListItem> SeverityOptions { get; set; } = new List<SelectListItem>();
     public IEnumerable<SelectListItem> TeamMemberOptions { get; set; } = new List<SelectListItem>();
 
@@ -79,23 +78,23 @@ public class IndexModel : PageModel
         var result = await _incidentService.GetByIdAsync(id);
         return Partial("_DeleteIncidentModal", result.Value);
     }
-
-    // NUEVO: Modal para asignar miembro
+    
     public async Task<PartialViewResult> OnGetAssignModal(Guid id)
     {
         var result = await _incidentService.GetByIdAsync(id);
-        
-        // Cargamos miembros del equipo para el select
         var members = await _teamMemberRepository.GetAllAsync();
-        TeamMemberOptions = members.Select(m => new SelectListItem {
-            Value = m.Id.ToString(),
-            Text = m.Name
-        }).ToList();
 
-        var assignRequest = new AssignIncidentRequest(id, Guid.Empty);
-        
-        ViewData["IncidentTitle"] = result.Value.Title;
-        return Partial("_AssignMemberModal", assignRequest);
+        var viewModel = new AssignMemberViewModel
+        {
+            IncidentTitle = result.Value.Title,
+            Request = new AssignIncidentRequest(id, Guid.Empty),
+            TeamMemberOptions = members.Select(m => new SelectListItem {
+                Value = m.Id.ToString(),
+                Text = m.Name
+            }).ToList()
+        };
+
+        return Partial("_AssignMemberModal", viewModel);
     }
 
     #endregion
@@ -119,8 +118,7 @@ public class IndexModel : PageModel
         var result = await _incidentService.DeleteIncidentAsync(id);
         return new JsonResult(new { success = result.IsSuccess, message = result.Message });
     }
-
-    // NUEVO: Acción para procesar la asignación
+    
     public async Task<IActionResult> OnPostAssign(AssignIncidentRequest input)
     {
         var result = await _incidentService.AssignTeamMemberAsync(input);

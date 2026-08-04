@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260802222714_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20260804221214_PrimeraMigracion")]
+    partial class PrimeraMigracion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -190,7 +190,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.TeamMember", b =>
                 {
-                    b.OwnsOne("Domain.Common.SimpleAuditRecord", "AuditRecord", b1 =>
+                    b.OwnsOne("Domain.Common.AuditRecord", "AuditRecord", b1 =>
                         {
                             b1.Property<Guid>("TeamMemberId")
                                 .HasColumnType("uuid");
@@ -198,8 +198,14 @@ namespace Infrastructure.Migrations
                             b1.Property<DateTime>("CreatedAt")
                                 .HasColumnType("timestamp with time zone");
 
+                            b1.Property<string>("CreatedBy")
+                                .HasColumnType("text");
+
                             b1.Property<DateTime>("LastModifiedAt")
                                 .HasColumnType("timestamp with time zone");
+
+                            b1.Property<string>("LastModifiedBy")
+                                .HasColumnType("text");
 
                             b1.HasKey("TeamMemberId");
 

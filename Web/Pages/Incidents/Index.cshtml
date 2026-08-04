@@ -41,7 +41,7 @@
         </div>
     </div>
 
-    <!-- Tabla de Incidentes -->
+    <!-- Tabla -->
     <div class="card shadow-sm border-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -132,11 +132,10 @@
     </div>
 </div>
 
-<!-- Estructura del Modal Genérico -->
+<!-- Modal -->
 <div class="modal fade" id="formModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" id="modalContent">
-            <!-- El contenido se carga vía AJAX -->
         </div>
     </div>
 </div>
@@ -174,8 +173,7 @@
             const form = e.currentTarget;
             const formData = new FormData(form);
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-            // Mostrar estado de carga en el botón
+            
             const btn = form.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
             btn.disabled = true;
@@ -213,12 +211,10 @@
         };
 
         const renderErrors = (message, errors) => {
-            // Limpiar errores previos
             document.querySelectorAll('.text-danger.field-validation-error').forEach(el => el.innerText = '');
             
             if (errors) {
                 Object.entries(errors).forEach(([key, value]) => {
-                    // Buscar spans de validación por el nombre de la propiedad
                     const span = document.querySelector(`[data-valmsg-for="${key}"]`) || 
                                  document.querySelector(`[data-valmsg-for="input.${key}"]`);
                     if (span) span.innerText = value;
