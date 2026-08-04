@@ -1,0 +1,55 @@
+@using Application.Mappings
+@using Domain.Enums
+@model Application.DTOs.UpdateTeamMemberDto
+
+@{
+    var roleOptions = Enum.GetValues<Role>().Select(r => new SelectListItem
+    {
+        Text = r.ToFriendlyString(), 
+        Value = r.ToString() 
+    });
+}
+ 
+<form asp-page-handler="@(Model.Id == Guid.Empty ? "Create" : "Edit")" id="teamMemberForm" method="post">
+    @Html.AntiForgeryToken()
+    <div class="modal-header">
+        <h5 class="modal-title">@(Model.Id == Guid.Empty ? "Nuevo Miembro" : "Editar Miembro")</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    
+    <div class="modal-body">
+        @if (Model.Id != Guid.Empty)
+        {
+            <input type="hidden" asp-for="Id" />
+        }
+        
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label font-weight-bold">Nombre</label>
+            <input asp-for="Name" class="form-control" placeholder="Nombre completo" />
+            <span asp-validation-for="Name" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label font-weight-bold">Correo Electrónico</label>
+            <input asp-for="Email" class="form-control" placeholder="ejemplo@empresa.com" />
+            <span asp-validation-for="Email" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Role" class="form-label font-weight-bold">Rol en el equipo</label>
+            <select asp-for="Role" class="form-select" asp-items="roleOptions">
+                <option value="">-- Seleccione un Rol --</option>
+            </select>
+            <span asp-validation-for="Role" class="text-danger small"></span>
+        </div>
+        
+        <div id="errorSummary" class="alert alert-danger d-none mt-2" role="alert"></div>
+    </div>
+
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary px-4">
+            @(Model.Id == Guid.Empty ? "Crear Miembro" : "Guardar Cambios")
+        </button>
+    </div>
+</form>

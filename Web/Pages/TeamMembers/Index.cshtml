@@ -1,0 +1,202 @@
+@page "/team"
+@model Web.Pages.TeamMembers.IndexModel
+@{
+    ViewData["Title"] = "Miembros del Equipo";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-people-fill"></i> Miembros del Equipo</h1>
+        <button type="button" class="btn btn-primary" onclick="openModal('@Url.Page("./Index", "CreateModal")')">
+            <i class="bi bi-plus-lg"></i> Nuevo Miembro
+        </button>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Buscar por nombre o email</label>
+                    <input asp-for="SearchName" class="form-control" placeholder="Ej: Juan Pérez..." />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Filtrar por Rol</label>
+                    <select asp-for="SearchRole" class="form-select" asp-items="Model.RoleOptions">
+                        <option value="">-- Todos los roles --</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                    <a asp-page="./Index" class="btn btn-outline-secondary w-100">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                @if (Model.TeamMembers.Any())
+                {
+                    foreach (var item in Model.TeamMembers)
+                    {
+                        <tr>
+                            <td class="fw-bold">@item.Name</td>
+                            <td>@item.Email</td>
+                            <td>
+                                <span class="badge bg-info text-dark">@Model.GetRoleDisplay(item.Role)</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-warning" 
+                                            onclick="openModal('@Url.Page("./Index", "EditModal", new { id = item.Id })')">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            onclick="openModal('@Url.Page("./Index", "DeleteModal", new { id = item.Id })')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">
+                            No se encontraron miembros con los filtros aplicados.
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-page="./Index"
+                       asp-route-CurrentPage="@(Model.CurrentPage - 1)"
+                       asp-route-SearchName="@Model.SearchName"
+                       asp-route-SearchRole="@Model.SearchRole">Anterior</a>
+                </li>
+
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" asp-page="./Index" asp-route-CurrentPage="@i"
+                       asp-route-SearchName="@Model.SearchName" asp-route-SearchRole="@Model.SearchRole">@i</a>
+                </li>
+                }
+
+                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" asp-page="./Index"
+                       asp-route-CurrentPage="@(Model.CurrentPage + 1)"
+                       asp-route-SearchName="@Model.SearchName"
+                       asp-route-SearchRole="@Model.SearchRole">Siguiente</a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
+
+<div class="modal fade" id="formModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" id="modalContent"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const modal = new bootstrap.Modal('#formModal');
+        const modalBody = document.querySelector('#modalContent');
+
+        /**
+         * Abre el modal y carga el HTML (GET)
+         */
+        const openModal = async (url) => {
+            try {
+                const response = await fetch(url);
+                modalBody.innerHTML = await response.text();
+                modal.show();
+                
+                document.querySelector('#teamMemberForm').addEventListener('submit', handleFormSubmit);
+            } catch (err) {
+                console.error('Error al cargar el modal:', err);
+            }
+        };
+
+        /**
+         * Maneja el envío del formulario (POST)
+         */
+        const handleFormSubmit = async (e) => {
+            e.preventDefault();
+            const form = e.currentTarget;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: { 'RequestVerificationToken': token }
+                });
+
+                const { success, message, errors } = await response.json();
+
+                if (success) {
+                    modal.hide();
+                    
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Operación Exitosa!',
+                        text: 'Los datos han sido guardados.',
+                        showConfirmButton: false,
+                        timer: 1500 
+                    });
+
+                    location.reload();
+                } else {
+                    renderErrors(message, errors);
+                }
+            } catch (err) {
+                console.error('Error en el envío:', err);
+            }
+        };
+
+        /**
+         * Renderiza los errores en los spans de validación
+         */
+        const renderErrors = (mainMessage, validationErrors) => {
+            document.querySelectorAll('.text-danger').forEach(el => el.innerText = '');
+            
+            if (validationErrors) {
+                Object.entries(validationErrors).forEach(([key, value]) => {
+                    const span = document.querySelector(`[data-valmsg-for="${key}"]`);
+                    if (span) span.innerText = value;
+                });
+            }
+            
+            // Msg principal
+            const summary = document.querySelector('#errorSummary');
+            if (summary) {
+                summary.innerText = mainMessage;
+                summary.classList.remove('d-none');
+            }
+        };
+    </script>
+}

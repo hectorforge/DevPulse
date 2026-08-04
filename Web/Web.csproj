@@ -19,8 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Pages\Incidents\" />
-      <Folder Include="Pages\TeamMembers\" />
+      <Folder Include="Pages\PostMortems\" />
     </ItemGroup>
 
 </Project>

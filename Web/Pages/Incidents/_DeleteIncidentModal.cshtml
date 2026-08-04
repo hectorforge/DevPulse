@@ -1,0 +1,18 @@
+@model Application.DTOs.IncidentDto
+
+<form asp-page-handler="Delete" id="incidentForm" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id" />
+    <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Eliminar Incidente</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body text-center">
+        <p>¿Seguro que deseas eliminar el incidente?</p>
+        <h5 class="fw-bold">@Model.Title</h5>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+    </div>
+</form>

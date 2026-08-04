@@ -1,0 +1,25 @@
+@model Application.DTOs.TeamMemberDto
+
+<form asp-page-handler="Delete" id="teamMemberForm" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id" />
+    
+    <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirmar Eliminación</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    </div>
+    
+    <div class="modal-body text-center py-4">
+        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+        <p class="mt-3 fs-5">¿Estás seguro de que deseas eliminar a:</p>
+        <h4 class="fw-bold">@Model.Name</h4>
+        <p class="text-muted small">Esta acción no se puede deshacer.</p>
+        
+        <div id="errorSummary" class="alert alert-danger d-none mt-2"></div>
+    </div>
+
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-danger px-4">Eliminar Definitivamente</button>
+    </div>
+</form>

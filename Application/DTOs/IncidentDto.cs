@@ -20,6 +20,11 @@ public record CreateIncidentRequest(
     Severity Severity
 );
 
+public record AssignIncidentRequest(
+    Guid IncidentId, 
+    Guid TeamMemberId
+);
+
 public record UpdateIncidentRequest(
     Guid Id,
     string Title,

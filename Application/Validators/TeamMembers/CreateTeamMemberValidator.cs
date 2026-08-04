@@ -1,9 +1,10 @@
+using Application.DTOs;
 using Domain.Entities;
 using FluentValidation;
 
 namespace Application.Validators.TeamMembers;
 
-public class CreateTeamMemberValidator : AbstractValidator<TeamMember>
+public class CreateTeamMemberValidator : AbstractValidator<CreateTeamMemberDto>
 {
     public CreateTeamMemberValidator()
     {
