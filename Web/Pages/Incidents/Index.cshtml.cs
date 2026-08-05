@@ -14,11 +14,16 @@ public class IndexModel : PageModel
 {
     private readonly IIncidentService _incidentService;
     private readonly ITeamMemberRepository _teamMemberRepository;
+    private readonly IFileStorageService _storageService;
 
-    public IndexModel(IIncidentService incidentService, ITeamMemberRepository teamMemberRepository)
+    public IndexModel(
+        IIncidentService incidentService, 
+        ITeamMemberRepository teamMemberRepository, 
+        IFileStorageService storageService)
     {
         _incidentService = incidentService;
         _teamMemberRepository = teamMemberRepository;
+        _storageService = storageService;
     }
 
     [BindProperty(SupportsGet = true)] public string? SearchName { get; set; }
@@ -51,7 +56,13 @@ public class IndexModel : PageModel
     }
 
     #region Modales
-
+    public async Task<PartialViewResult> OnGetScreenshotModal(Guid id)
+    {
+        var result = await _incidentService.GetByIdAsync(id);
+        var incident = result.Value;
+        return Partial("_IncidentScreenshotModal", incident);
+    }
+    
     public PartialViewResult OnGetCreateModal()
     {
         var viewModel = new IncidentFormViewModel(); 
@@ -69,7 +80,9 @@ public class IndexModel : PageModel
             Title = incident.Title,
             Description = incident.Description,
             Severity = incident.Severity,
-            Status = incident.Status
+            Status = incident.Status,
+            ScreenshotUrl = incident.ScreenshotUrl,
+            Recomendation = incident.Recommendation
         };
     
         return Partial("_IncidentModal", viewModel);
@@ -107,16 +120,61 @@ public class IndexModel : PageModel
     #endregion
 
     #region Acciones (JSON Results)
-
+    /*
     public async Task<IActionResult> OnPostCreate(CreateIncidentRequest input)
     {
         var result = await _incidentService.CreateIncidentAsync(input);
         return new JsonResult(new { success = result.IsSuccess, message = result.Message, errors = result.ErrorsValidations });
+    }*/
+    
+    public async Task<IActionResult> OnPostCreate(IncidentFormViewModel viewModel)
+    {
+        string imageUrl = "";
+        
+        if (viewModel.ScreenshotFile != null)
+        {
+            imageUrl = await _storageService.UploadImageAsync(viewModel.ScreenshotFile, "incidents");
+        }
+        
+        var request = new CreateIncidentRequest(
+            viewModel.Title,
+            viewModel.Description,
+            viewModel.Severity,
+            imageUrl,
+            viewModel.Recomendation
+        );
+
+        var result = await _incidentService.CreateIncidentAsync(request);
+        return new JsonResult(new { success = result.IsSuccess, message = result.Message, errors = result.ErrorsValidations });
     }
 
+    /*
     public async Task<IActionResult> OnPostEdit(UpdateIncidentRequest input)
     {
         var result = await _incidentService.UpdateIncidentAsync(input);
+        return new JsonResult(new { success = result.IsSuccess, message = result.Message, errors = result.ErrorsValidations });
+    }*/
+    
+    public async Task<IActionResult> OnPostEdit(IncidentFormViewModel viewModel)
+    {
+        string imageUrl = viewModel.ScreenshotUrl ?? "";
+        
+        if (viewModel.ScreenshotFile != null)
+        {
+            imageUrl = await _storageService.UploadImageAsync(viewModel.ScreenshotFile, "incidents");
+        }
+
+        var request = new UpdateIncidentRequest(
+            viewModel.Id.Value,
+            viewModel.Title,
+            viewModel.Description,
+            viewModel.Severity,
+            viewModel.Status,
+            imageUrl,
+            viewModel.Recomendation
+        );
+
+        var result = await _incidentService.UpdateIncidentAsync(request);
         return new JsonResult(new { success = result.IsSuccess, message = result.Message, errors = result.ErrorsValidations });
     }
 

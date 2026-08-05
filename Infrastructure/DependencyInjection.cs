@@ -1,6 +1,8 @@
 using Application.Interfaces;
+using Application.Services.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Repositories;
+using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +19,7 @@ public static class DependencyInjection
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<IIncidentRepository,IncidentRepository>();
         services.AddScoped<ITeamMemberRepository,TeamMemberRepository>();
+        services.AddScoped<IFileStorageService, CloudinaryStorageService>();
         return services;
     }
 }

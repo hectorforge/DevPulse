@@ -38,11 +38,18 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("ExpectedResolutionAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Recommendation")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("ReportedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("ResolvedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ScreenshotUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("Severity")
                         .HasColumnType("integer");

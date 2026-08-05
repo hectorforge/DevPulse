@@ -20,6 +20,13 @@ public class IncidentFormViewModel
 
     public IncidentStatus Status { get; set; }
     
+    [Required(ErrorMessage = "Debe subir una captura de pantalla")]
+    public string ScreenshotUrl { get; set; } = string.Empty;
+    
+    [Display(Name = "Captura de pantalla")]
+    public IFormFile ScreenshotFile { get; set; }
+    
+    public string Recomendation { get; set; }= string.Empty;
     
     public bool IsEdit => Id.HasValue && Id.Value != Guid.Empty;
 }

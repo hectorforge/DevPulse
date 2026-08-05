@@ -10,7 +10,7 @@ public class IncidentConfiguration : IEntityTypeConfiguration<Incident>
     {
         builder.HasKey(i => i.Id);
         
-        builder.OwnsOne(i => i.AuditRecord); // Solo añade las columnas , no una tabla aparte
+        builder.OwnsOne(i => i.AuditRecord);
         
         builder.HasOne(i => i.PostMortem)
             .WithOne(p => p.Incident)

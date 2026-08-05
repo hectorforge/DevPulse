@@ -16,5 +16,8 @@ public class CreateIncidentValidator : AbstractValidator<CreateIncidentRequest>
 
         RuleFor(x => x.Severity)
             .IsInEnum().WithMessage("La severidad no es válida.");
+        
+        RuleFor(x => x.ScreenshotUrl)
+            .NotEmpty().WithMessage("La captura de imagen es obligatoria.");
     }
 }

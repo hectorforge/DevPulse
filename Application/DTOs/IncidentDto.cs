@@ -12,13 +12,17 @@ public record IncidentDto(
     DateTime ReportedAt,
     DateTime? ResolvedAt,
     Guid TeamMemberId,
-    string NameTeamMember
+    string NameTeamMember,
+    string ScreenshotUrl,
+    string Recommendation
 );
 
 public record CreateIncidentRequest(
     string Title,
     string Description,
-    Severity Severity
+    Severity Severity,
+    string ScreenshotUrl,
+    string Recommendation
 );
 
 public record AssignIncidentRequest(
@@ -31,7 +35,9 @@ public record UpdateIncidentRequest(
     string Title,
     string Description,
     Severity Severity,
-    IncidentStatus Status
+    IncidentStatus Status,
+    string ScreenshotUrl,
+    string Recommendation
 );
 
 public record IncidentQueryDto(

@@ -8,6 +8,8 @@ public class Incident : IAuditable
     public Guid Id { get; private set; }
     public string Title { get; private set; }
     public string Description { get; private set; }
+    public string ScreenshotUrl { get; private set; }
+    public string? Recommendation { get; private set; }
     public Severity Severity { get; private set; }
     public IncidentStatus Status { get; private set; }
     public DateTime ReportedAt { get; private set; }
@@ -28,7 +30,9 @@ public class Incident : IAuditable
         string title, 
         string description, 
         Severity severity,
-        DateTime reportedAt)
+        DateTime reportedAt,
+        string screenshotUrl,
+        string recommendation)
     {
         var incident = new Incident
         {
@@ -37,7 +41,9 @@ public class Incident : IAuditable
             Description = description,
             Severity = severity,
             Status = IncidentStatus.Reported,
-            ReportedAt = reportedAt
+            ReportedAt = reportedAt,
+            ScreenshotUrl =  screenshotUrl,
+            Recommendation =  recommendation
         };
 
         incident.UpdateExpectedResolution();
@@ -64,6 +70,16 @@ public class Incident : IAuditable
     public void ChangeStatus(IncidentStatus status)
     {
         Status = status;
+    }
+    
+    public void ChangeScreenshot(string? screenshotUrl)
+    {
+        ScreenshotUrl = screenshotUrl;
+    }
+
+    public void ChangeRecommendation(string? recommendation)
+    {
+        Recommendation = recommendation;
     }
     
     public void Resolve(DateTime resolvedAt)

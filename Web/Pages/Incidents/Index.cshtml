@@ -108,6 +108,14 @@
                                                 onclick="openModal('@Url.Page("./Index", "EditModal", new { id = item.Id })')">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
+                                        <!-- Botón Inspeccionar imagen -->
+                                        @if (!string.IsNullOrEmpty(item.ScreenshotUrl))
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-info" title="Ver Captura"
+                                                    onclick="openModal('@Url.Page("./Index", "ScreenshotModal", new { id = item.Id })')">
+                                                <i class="bi bi-camera-fill"></i>
+                                            </button>
+                                        }
                                         <!-- Botón Eliminar -->
                                         <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar"
                                                 onclick="openModal('@Url.Page("./Index", "DeleteModal", new { id = item.Id })')">

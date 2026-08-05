@@ -16,9 +16,8 @@
     });
 }
 
-<form asp-page-handler="@(Model.IsEdit ? "Edit" : "Create")" id="incidentForm" method="post">
+<form asp-page-handler="@(Model.IsEdit ? "Edit" : "Create")" id="incidentForm" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
-    
     <div class="modal-header @(Model.IsEdit ? "bg-warning text-dark" : "bg-primary text-white")">
         <h5 class="modal-title">
             <i class="bi @(Model.IsEdit ? "bi-pencil-square" : "bi-megaphone")"></i>
@@ -26,7 +25,7 @@
         </h5>
         <button type="button" class="btn-close @(Model.IsEdit ? "" : "btn-close-white")" data-bs-dismiss="modal"></button>
     </div>
-    
+
     <div class="modal-body">
         @if (Model.IsEdit) 
         { 
@@ -41,8 +40,24 @@
 
         <div class="mb-3">
             <label asp-for="Description" class="form-label fw-bold"></label>
-            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Pasos para reproducir, logs..."></textarea>
+            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Pasos para reproducir, logs..."></textarea>
             <span asp-validation-for="Description" class="text-danger small"></span>
+        </div>
+        
+        <div class="mb-3">
+            <label asp-for="ScreenshotFile" class="form-label fw-bold">Evidencia (Imagen)</label>
+            @if (Model.IsEdit && !string.IsNullOrEmpty(Model.ScreenshotUrl))
+            {
+                <div class="mb-2">
+                    <small class="text-muted d-block">Imagen actual:</small>
+                    <img src="@Model.ScreenshotUrl" class="img-thumbnail" style="max-height: 100px;" />
+                </div>
+            }
+            <input asp-for="ScreenshotFile" type="file" class="form-control" accept="image/*" />
+            <span asp-validation-for="ScreenshotFile" class="text-danger small"></span>
+            
+            <input type="hidden" asp-for="ScreenshotUrl" />
+            
         </div>
 
         <div class="row">
@@ -63,6 +78,12 @@
                     <span asp-validation-for="Status" class="text-danger small"></span>
                 </div>
             }
+        </div>
+        
+        <div class="mb-3">
+            <label asp-for="Recomendation" class="form-label fw-bold">Recomendación Técnica</label>
+            <textarea asp-for="Recomendation" class="form-control" rows="2" placeholder="Sugerencia para la resolución..."></textarea>
+            <span asp-validation-for="Recomendation" class="text-danger small"></span>
         </div>
 
         <div id="errorSummary" class="alert alert-danger d-none mt-2"></div>

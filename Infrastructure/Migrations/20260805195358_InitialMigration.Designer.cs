@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260804221214_PrimeraMigracion")]
-    partial class PrimeraMigracion
+    [Migration("20260805195358_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,11 +41,18 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("ExpectedResolutionAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Recommendation")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("ReportedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("ResolvedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ScreenshotUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("Severity")
                         .HasColumnType("integer");

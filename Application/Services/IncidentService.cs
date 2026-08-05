@@ -78,12 +78,14 @@ public class IncidentService : IIncidentService
 
         try
         {
-            // Uso del método estático Create del Dominio
             var incident = Incident.Create(
                 request.Title,
                 request.Description,
                 request.Severity,
-                DateTime.UtcNow );
+                DateTime.UtcNow,
+                request.ScreenshotUrl,
+                request.Recommendation
+                );
 
             await _incidentRepository.AddAsync(incident);
             await _incidentRepository.SaveChangesAsync();
@@ -136,11 +138,23 @@ public class IncidentService : IIncidentService
             return Result<IncidentDto>.Failure("Incidente no encontrado.");
         }
         
-        // USO DE MÉTODOS DE DOMINIO (Encapsulamiento)
-        incident.ChangeTitle(request.Title);
-        incident.ChangeDescription(request.Description);
-        incident.ChangeSeverity(request.Severity); // Este método interno actualiza ExpectedResolutionAt automáticamente
-        incident.ChangeStatus(request.Status);
+        if (incident.Title != request.Title)
+            incident.ChangeTitle(request.Title);
+        
+        if(incident.Description != request.Description)
+            incident.ChangeDescription(request.Description);
+        
+        if(incident.Severity != request.Severity)
+            incident.ChangeSeverity(request.Severity);
+        
+        if(incident.Status != request.Status)
+            incident.ChangeStatus(request.Status);
+        
+        if(incident.ScreenshotUrl != request.ScreenshotUrl)
+            incident.ChangeScreenshot(request.ScreenshotUrl);
+        
+        if(incident.Recommendation != request.Recommendation)
+            incident.ChangeRecommendation(request.Recommendation);
 
         _incidentRepository.Update(incident);
         await _incidentRepository.SaveChangesAsync();
