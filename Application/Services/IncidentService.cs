@@ -102,8 +102,7 @@ public class IncidentService : IIncidentService
         _logger.LogDebug("Consultando incidentes paginados. Filtros: {Name}, {Severity}", query.name, query.severity);
 
         var (items, totalCount) = await _incidentRepository.GetPagedAsync(query.name, query.severity, query.page, query.size);
-
-        // Se asume que ToDtoList() maneja la transformación
+        
         return items.ToDtoList();
     }
 

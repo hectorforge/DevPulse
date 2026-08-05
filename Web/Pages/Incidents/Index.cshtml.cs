@@ -1,5 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces;
+using Application.Mappings;
 using Application.Services.Interfaces;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -45,7 +46,7 @@ public class IndexModel : PageModel
         SeverityOptions = Enum.GetValues<Severity>().Select(s => new SelectListItem 
         {
             Value = s.ToString(),
-            Text = s.ToString()
+            Text = s.ToFriendlyString()
         }).ToList();
     }
 
@@ -53,8 +54,8 @@ public class IndexModel : PageModel
 
     public PartialViewResult OnGetCreateModal()
     {
-        var emptyRequest = new CreateIncidentRequest("", "", Severity.Low);
-        return Partial("_IncidentModal", emptyRequest);
+        var viewModel = new IncidentFormViewModel(); 
+        return Partial("_IncidentModal", viewModel);
     }
 
     public async Task<PartialViewResult> OnGetEditModal(Guid id)
@@ -62,15 +63,16 @@ public class IndexModel : PageModel
         var result = await _incidentService.GetByIdAsync(id);
         var incident = result.Value;
         
-        var updateRequest = new UpdateIncidentRequest(
-            incident.Id,
-            incident.Title,
-            incident.Description,
-            incident.Severity,
-            incident.Status
-        );
-        
-        return Partial("_IncidentModal", updateRequest);
+        var viewModel = new IncidentFormViewModel
+        {
+            Id = incident.Id,
+            Title = incident.Title,
+            Description = incident.Description,
+            Severity = incident.Severity,
+            Status = incident.Status
+        };
+    
+        return Partial("_IncidentModal", viewModel);
     }
 
     public async Task<PartialViewResult> OnGetDeleteModal(Guid id)
@@ -82,15 +84,20 @@ public class IndexModel : PageModel
     public async Task<PartialViewResult> OnGetAssignModal(Guid id)
     {
         var result = await _incidentService.GetByIdAsync(id);
+        var incident = result.Value;
+        
+        var currentMemberId = incident?.TeamMemberId ?? Guid.Empty;
+        
         var members = await _teamMemberRepository.GetAllAsync();
 
         var viewModel = new AssignMemberViewModel
         {
-            IncidentTitle = result.Value.Title,
-            Request = new AssignIncidentRequest(id, Guid.Empty),
+            IncidentTitle = incident?.Title ?? "Incidente Desconocido",
+            Request = new AssignIncidentRequest(id, currentMemberId),
             TeamMemberOptions = members.Select(m => new SelectListItem {
                 Value = m.Id.ToString(),
-                Text = m.Name
+                Text = m.Name,
+                Selected = m.Id == currentMemberId
             }).ToList()
         };
 
@@ -119,7 +126,7 @@ public class IndexModel : PageModel
         return new JsonResult(new { success = result.IsSuccess, message = result.Message });
     }
     
-    public async Task<IActionResult> OnPostAssign(AssignIncidentRequest input)
+    public async Task<IActionResult> OnPostAssign([Bind(Prefix = "Request")]AssignIncidentRequest input)
     {
         var result = await _incidentService.AssignTeamMemberAsync(input);
         return new JsonResult(new { 

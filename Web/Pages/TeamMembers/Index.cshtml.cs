@@ -5,7 +5,7 @@ using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Web.ViewModels.TeamMembers;
 
 namespace Web.Pages.TeamMembers;
 
@@ -68,27 +68,10 @@ public class IndexModel : PageModel
     }
     
     #region Modales
-    /*
     public PartialViewResult OnGetCreateModal()
     {
-        return new PartialViewResult
-
-        {
-            ViewName = "_TeamMemberModal",
-            ViewData = new ViewDataDictionary<UpdateTeamMemberDto>(
-                ViewData,
-                new UpdateTeamMemberDto(Guid.Empty, "", "", Role.Developer))
-        };
-    }*/
-    
-    public PartialViewResult OnGetCreateModal()
-    {
-        var emptyMember = new UpdateTeamMemberDto(Guid.Empty, "", "", Role.Developer);
-        return new PartialViewResult
-        {
-            ViewName = "_TeamMemberModal",
-            ViewData = new ViewDataDictionary<UpdateTeamMemberDto>(ViewData, emptyMember)
-        };
+        var viewModel = new TeamMemberFormViewModel();
+        return Partial("_TeamMemberModal", viewModel);
     }
     
     public async Task<PartialViewResult> OnGetDeleteModal(Guid id)
@@ -97,31 +80,20 @@ public class IndexModel : PageModel
         return Partial("_DeleteMemberModal", result.Value);
     }
     
-    /*
-    public async Task<PartialViewResult> OnGetEditModal(Guid id)
-    {
-        var result = await _teamMemberService.GetById(id);
-        var member = result.Value;
-        var updateDto = new UpdateTeamMemberDto(member.Id, member.Name, member.Email, Enum.Parse<Role>(member.Role));
-        return Partial("_TeamMemberModal", updateDto);
-    }*/
     public async Task<PartialViewResult> OnGetEditModal(Guid id)
     {
         var result = await _teamMemberService.GetById(id);
         var member = result.Value;
         
-        var updateDto = new UpdateTeamMemberDto(
-            member.Id, 
-            member.Name, 
-            member.Email, 
-            Enum.Parse<Role>(member.Role)
-        );
-
-        return new PartialViewResult
+        var viewModel = new TeamMemberFormViewModel
         {
-            ViewName = "_TeamMemberModal",
-            ViewData = new ViewDataDictionary<UpdateTeamMemberDto>(ViewData, updateDto)
+            Id = member.Id,
+            Name = member.Name,
+            Email = member.Email,
+            Role = Enum.Parse<Role>(member.Role)
         };
+
+        return Partial("_TeamMemberModal", viewModel);
     }
     #endregion
 

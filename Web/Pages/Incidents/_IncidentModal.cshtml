@@ -1,67 +1,66 @@
+@using Application.Mappings
 @using Domain.Enums
-@using Application.DTOs
-@model dynamic 
+@model Web.ViewModels.Incidents.IncidentFormViewModel
 
 @{
-    bool isEdit = ViewData.Model is UpdateIncidentRequest;
-    
     var severityOptions = Enum.GetValues<Severity>().Select(s => new SelectListItem 
     { 
-        Text = s.ToString(), 
+        Text = s.ToFriendlyString(), 
         Value = s.ToString() 
     });
 
     var statusOptions = Enum.GetValues<IncidentStatus>().Select(s => new SelectListItem 
     { 
-        Text = s.ToString(),
+        Text = s.ToFriendlyString(),
         Value = s.ToString() 
     });
 }
 
-<form asp-page-handler="@(isEdit ? "Edit" : "Create")" id="incidentForm" method="post">
+<form asp-page-handler="@(Model.IsEdit ? "Edit" : "Create")" id="incidentForm" method="post">
     @Html.AntiForgeryToken()
-    <div class="modal-header @(isEdit ? "bg-warning text-dark" : "bg-primary text-white")">
+    
+    <div class="modal-header @(Model.IsEdit ? "bg-warning text-dark" : "bg-primary text-white")">
         <h5 class="modal-title">
-            <i class="bi @(isEdit ? "bi-pencil-square" : "bi- megaphone")"></i>
-            @(isEdit ? "Editar Incidente" : "Reportar Nuevo Incidente")
+            <i class="bi @(Model.IsEdit ? "bi-pencil-square" : "bi-megaphone")"></i>
+            @(Model.IsEdit ? "Editar Incidente" : "Reportar Nuevo Incidente")
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close @(Model.IsEdit ? "" : "btn-close-white")" data-bs-dismiss="modal"></button>
     </div>
     
     <div class="modal-body">
-        @if (isEdit) 
+        @if (Model.IsEdit) 
         { 
-            <input type="hidden" name="Id" value="@Model.Id" /> 
+            <input type="hidden" asp-for="Id" /> 
         }
         
         <div class="mb-3">
-            <label class="form-label fw-bold">Título del Incidente</label>
-            <input name="Title" value="@Model.Title" class="form-control" placeholder="Resumen corto del problema" />
-            <span data-valmsg-for="Title" class="text-danger small"></span>
+            <label asp-for="Title" class="form-label fw-bold"></label>
+            <input asp-for="Title" class="form-control" placeholder="Resumen corto del problema" />
+            <span asp-validation-for="Title" class="text-danger small"></span>
         </div>
 
         <div class="mb-3">
-            <label class="form-label fw-bold">Descripción Detallada</label>
-            <textarea name="Description" class="form-control" rows="4" placeholder="Pasos para reproducir, logs, etc...">@Model.Description</textarea>
-            <span data-valmsg-for="Description" class="text-danger small"></span>
+            <label asp-for="Description" class="form-label fw-bold"></label>
+            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Pasos para reproducir, logs..."></textarea>
+            <span asp-validation-for="Description" class="text-danger small"></span>
         </div>
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label class="form-label fw-bold">Severidad</label>
-                <select name="Severity" class="form-select" asp-items="severityOptions">
-                    @if (!isEdit) { <option value="">-- Seleccione --</option> }
+                <label asp-for="Severity" class="form-label fw-bold">Severidad</label>
+                <select asp-for="Severity" class="form-select" asp-items="severityOptions">
+                    @if (!Model.IsEdit) { <option value="">-- Seleccione --</option> }
                 </select>
-                <span data-valmsg-for="Severity" class="text-danger small"></span>
+                <span asp-validation-for="Severity" class="text-danger small"></span>
             </div>
 
-            @if (isEdit) 
+            @if (Model.IsEdit) 
             {
                 <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Estado Actual</label>
-                    <select name="Status" class="form-select" asp-items="statusOptions">
+                    <label asp-for="Status" class="form-label fw-bold">Estado Actual</label>
+                    <select asp-for="Status" class="form-select" asp-items="statusOptions">
                     </select>
-                    <span data-valmsg-for="Status" class="text-danger small"></span>
+                    <span asp-validation-for="Status" class="text-danger small"></span>
                 </div>
             }
         </div>
@@ -71,8 +70,8 @@
 
     <div class="modal-footer bg-light">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" class="btn @(isEdit ? "btn-warning" : "btn-primary") px-4">
-            @(isEdit ? "Actualizar Incidente" : "Reportar Incidente")
+        <button type="submit" class="btn @(Model.IsEdit ? "btn-warning" : "btn-primary") px-4">
+            @(Model.IsEdit ? "Actualizar Incidente" : "Reportar Incidente")
         </button>
     </div>
 </form>

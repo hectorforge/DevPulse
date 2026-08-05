@@ -34,6 +34,7 @@ public class IncidentRepository : IIncidentRepository
         var totalCount = await query.CountAsync(ct);
         
         var items = await query
+            .Include(i => i.AssignedTo)
             .AsNoTracking()
             .OrderByDescending(i => i.AuditRecord.CreatedAt)
             .Skip((page - 1) * size)
@@ -49,13 +50,14 @@ public class IncidentRepository : IIncidentRepository
         CancellationToken ct = default)
     {
         IQueryable<Incident> query = _context.Incidents;
-
         if (!track)
         {
             query = query.AsNoTracking();
         }
         
-        return await query.FirstOrDefaultAsync(i => i.Id == id, ct);
+        return await query
+            .Include(i => i.AssignedTo)
+            .FirstOrDefaultAsync(i => i.Id == id, ct);
     }
 
     public async Task AddAsync(Incident incident, CancellationToken ct = default)

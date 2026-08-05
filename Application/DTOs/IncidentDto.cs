@@ -11,6 +11,7 @@ public record IncidentDto(
     DateTime ExpectedResolutionAt,
     DateTime ReportedAt,
     DateTime? ResolvedAt,
+    Guid TeamMemberId,
     string NameTeamMember
 );
 

@@ -16,7 +16,8 @@ public static class IncidentMappingExtensions
             incident.ExpectedResolutionAt,
             incident.ReportedAt,
             incident.ResolvedAt,
-            incident.AssignedTo?.Name ?? "Not Assigned" 
+            incident.AssignedTo?.Id ?? Guid.Empty,
+            incident.AssignedTo?.Name ?? "Sin asignar" 
         );
     }
     

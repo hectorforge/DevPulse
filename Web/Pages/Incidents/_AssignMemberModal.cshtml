@@ -1,27 +1,42 @@
-@model Web.ViewModels.Incidents.AssignMemberViewModel;
+@model Web.ViewModels.Incidents.AssignMemberViewModel
 
 <div class="modal-header bg-primary text-white">
-    <h5 class="modal-title">Asignar Responsable</h5>
+    <h5 class="modal-title">
+        <i class="bi bi-person-check-fill me-2"></i> Asignar Responsable
+    </h5>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 </div>
 
 <form asp-page-handler="Assign" id="incidentForm" method="post">
+    @Html.AntiForgeryToken()
     <div class="modal-body">
         <input type="hidden" asp-for="Request.IncidentId" />
         
-        <p>Asignando técnico para el incidente: <strong>@Model.IncidentTitle</strong></p>
+        <div class="alert alert-info border-0 shadow-sm">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Asignando técnico para: <br>
+            <strong class="text-dark">@Model.IncidentTitle</strong>
+        </div>
         
         <div class="mb-3">
-            <label class="form-label fw-bold">Seleccionar Miembro del Equipo</label>
-            <select asp-for="Request.TeamMemberId" class="form-select" 
-                    asp-items="Model.TeamMemberOptions">
-                <option value="">-- Seleccione un técnico --</option>
-            </select>
-            <span asp-validation-for="Request.TeamMemberId" class="text-danger"></span>
+            <label asp-for="Request.TeamMemberId" class="form-label fw-bold">Seleccionar Miembro del Equipo</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+                <select asp-for="Request.TeamMemberId" class="form-select" 
+                        asp-items="Model.TeamMemberOptions">
+                    <option value="@Guid.Empty">-- Sin asignar / Liberar incidente --</option>
+                </select>
+            </div>
+            <span asp-validation-for="Request.TeamMemberId" class="text-danger small"></span>
         </div>
+        
+        <div id="errorSummary" class="alert alert-danger d-none mt-2"></div>
     </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Confirmar Asignación</button>
+    
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-save me-1"></i> Confirmar Asignación
+        </button>
     </div>
 </form>
