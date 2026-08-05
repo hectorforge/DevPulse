@@ -16,6 +16,48 @@
     });
 }
 
+<style>
+    .image-upload-container {
+        cursor: pointer;
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        position: relative;
+        overflow: hidden;
+        min-height: 150px;
+    }
+
+    .image-upload-container:hover {
+        border-color: #0d6efd;
+        background: #f1f4f9;
+    }
+
+    .preview-overlay {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s;
+        color: white;
+    }
+
+    .image-upload-container:hover .preview-overlay {
+        opacity: 1;
+    }
+
+    #imagePreview {
+        max-width: 100%;
+        max-height: 250px;
+        display: block;
+        margin: 0 auto;
+        object-fit: contain;
+    }
+</style>
+
 <form asp-page-handler="@(Model.IsEdit ? "Edit" : "Create")" id="incidentForm" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
     <div class="modal-header @(Model.IsEdit ? "bg-warning text-dark" : "bg-primary text-white")">
@@ -27,42 +69,48 @@
     </div>
 
     <div class="modal-body">
-        @if (Model.IsEdit) 
-        { 
-            <input type="hidden" asp-for="Id" /> 
-        }
-        
-        <div class="mb-3">
-            <label asp-for="Title" class="form-label fw-bold"></label>
-            <input asp-for="Title" class="form-control" placeholder="Resumen corto del problema" />
-            <span asp-validation-for="Title" class="text-danger small"></span>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="Description" class="form-label fw-bold"></label>
-            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Pasos para reproducir, logs..."></textarea>
-            <span asp-validation-for="Description" class="text-danger small"></span>
-        </div>
-        
-        <div class="mb-3">
-            <label asp-for="ScreenshotFile" class="form-label fw-bold">Evidencia (Imagen)</label>
-            @if (Model.IsEdit && !string.IsNullOrEmpty(Model.ScreenshotUrl))
-            {
-                <div class="mb-2">
-                    <small class="text-muted d-block">Imagen actual:</small>
-                    <img src="@Model.ScreenshotUrl" class="img-thumbnail" style="max-height: 100px;" />
-                </div>
-            }
-            <input asp-for="ScreenshotFile" type="file" class="form-control" accept="image/*" />
-            <span asp-validation-for="ScreenshotFile" class="text-danger small"></span>
-            
-            <input type="hidden" asp-for="ScreenshotUrl" />
-            
-        </div>
+        @if (Model.IsEdit) { <input type="hidden" asp-for="Id" /> }
+        <input type="hidden" asp-for="ScreenshotUrl" id="currentUrl" />
 
         <div class="row">
+            <div class="col-md-12 mb-3">
+                <label asp-for="Title" class="form-label fw-bold small text-uppercase">Título del Incidente</label>
+                <input asp-for="Title" class="form-control form-control-lg" placeholder="Ej: Error crítico en base de datos" />
+                <span asp-validation-for="Title" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-12 mb-3">
+                <label asp-for="Description" class="form-label fw-bold small text-uppercase">Descripción Detallada</label>
+                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Describe los pasos para reproducir el error..."></textarea>
+                <span asp-validation-for="Description" class="text-danger small"></span>
+            </div>
+            
+            <div class="col-md-12 mb-4">
+                <label class="form-label fw-bold small text-uppercase">Evidencia Visual</label>
+                <div class="image-upload-container d-flex align-items-center justify-content-center text-center" onclick="document.getElementById('fileInput').click()">
+                    
+                    <div id="emptyState" class="@(string.IsNullOrEmpty(Model.ScreenshotUrl) ? "" : "d-none")">
+                        <i class="bi bi-cloud-arrow-up display-4 text-muted"></i>
+                        <p class="mb-0 text-muted">Haz clic para subir o arrastra una imagen</p>
+                        <small class="text-secondary">(JPG, PNG o GIF)</small>
+                    </div>
+
+                    <div id="previewContainer" class="@(string.IsNullOrEmpty(Model.ScreenshotUrl) ? "d-none" : "") w-100">
+                        <img id="imagePreview" src="@Model.ScreenshotUrl" alt="Vista previa" />
+                        <div class="preview-overlay">
+                            <div class="text-center">
+                                <i class="bi bi-arrow-repeat fs-2"></i>
+                                <p class="mb-0">Hacer clic para cambiar</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input asp-for="ScreenshotFile" type="file" id="fileInput" class="d-none" accept="image/*" onchange="previewImage(this)" />
+                <span asp-validation-for="ScreenshotFile" class="text-danger small"></span>
+            </div>
+
             <div class="col-md-6 mb-3">
-                <label asp-for="Severity" class="form-label fw-bold">Severidad</label>
+                <label asp-for="Severity" class="form-label fw-bold small text-uppercase">Severidad</label>
                 <select asp-for="Severity" class="form-select" asp-items="severityOptions">
                     @if (!Model.IsEdit) { <option value="">-- Seleccione --</option> }
                 </select>
@@ -72,27 +120,43 @@
             @if (Model.IsEdit) 
             {
                 <div class="col-md-6 mb-3">
-                    <label asp-for="Status" class="form-label fw-bold">Estado Actual</label>
-                    <select asp-for="Status" class="form-select" asp-items="statusOptions">
-                    </select>
-                    <span asp-validation-for="Status" class="text-danger small"></span>
+                    <label asp-for="Status" class="form-label fw-bold small text-uppercase">Estado</label>
+                    <select asp-for="Status" class="form-select" asp-items="statusOptions"></select>
                 </div>
             }
-        </div>
-        
-        <div class="mb-3">
-            <label asp-for="Recomendation" class="form-label fw-bold">Recomendación Técnica</label>
-            <textarea asp-for="Recomendation" class="form-control" rows="2" placeholder="Sugerencia para la resolución..."></textarea>
-            <span asp-validation-for="Recomendation" class="text-danger small"></span>
+
+            <div class="col-md-12 mb-3">
+                <label asp-for="Recomendation" class="form-label fw-bold small text-uppercase">Recomendación Técnica</label>
+                <textarea asp-for="Recomendation" class="form-control bg-light" rows="2" placeholder="Opcional: Sugerencias para el equipo técnico..."></textarea>
+            </div>
         </div>
 
         <div id="errorSummary" class="alert alert-danger d-none mt-2"></div>
     </div>
 
-    <div class="modal-footer bg-light">
+    <div class="modal-footer bg-light border-0">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" class="btn @(Model.IsEdit ? "btn-warning" : "btn-primary") px-4">
-            @(Model.IsEdit ? "Actualizar Incidente" : "Reportar Incidente")
+        <button type="submit" class="btn @(Model.IsEdit ? "btn-warning" : "btn-primary") px-5 shadow-sm">
+            @(Model.IsEdit ? "Actualizar Registro" : "Reportar Incidente")
         </button>
     </div>
 </form>
+
+<script>
+    function previewImage(input) {
+        const file = input.files[0];
+        const preview = document.getElementById('imagePreview');
+        const emptyState = document.getElementById('emptyState');
+        const container = document.getElementById('previewContainer');
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                emptyState.classList.add('d-none');
+                container.classList.remove('d-none');
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+</script>
