@@ -20,124 +20,29 @@
     <!-- Filtros -->
     <div class="card shadow-sm mb-4 border-0">
         <div class="card-body bg-light rounded">
-            <form method="get" class="row g-3">
+            <form id="filterForm" method="get" class="row g-3">
+                <input type="hidden" asp-for="CurrentPage" id="currentPageInput" />
                 <div class="col-md-5">
                     <label class="form-label fw-bold">Buscar por título</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                        <input asp-for="SearchName" class="form-control" placeholder="Ej: Error en servidor..." />
-                    </div>
+                    <input asp-for="SearchName" class="form-control" id="searchNameInput" placeholder="Ej: Error..." />
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-bold">Severidad</label>
-                    <select asp-for="FilterSeverity" class="form-select" asp-items="Model.SeverityOptions">
-                        <option value="">-- Todas las severidades --</option>
+                    <select asp-for="FilterSeverity" class="form-select" id="severityInput" asp-items="Model.SeverityOptions">
+                        <option value="">-- Todas --</option>
                     </select>
                 </div>
                 <div class="col-md-3 d-flex align-items-end gap-2">
                     <button type="submit" class="btn btn-dark w-100">Filtrar</button>
-                    <a asp-page="./Index" class="btn btn-outline-secondary w-100">Limpiar</a>
+                    <a href="/incidents" class="btn btn-outline-secondary w-100">Limpiar</a>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Tabla -->
-    <div class="card shadow-sm border-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th style="width: 30%">Título e ID</th>
-                        <th>Severidad</th>
-                        <th>Estado</th>
-                        <th>Fecha Reporte</th>
-                        <th>Responsable</th>
-                        <th class="text-end">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.Incidents.Any())
-                    {
-                        foreach (var item in Model.Incidents)
-                        {
-                            <tr>
-                                <td>
-                                    <div class="fw-bold text-primary">@item.Title</div>
-                                    <small class="text-muted text-uppercase" style="font-size: 0.7rem;">ID: @item.Id.ToString().Substring(0,8)...</small>
-                                </td>
-                                <td>
-                                    @{
-                                        var sevClass = item.Severity switch {
-                                            Severity.Critical => "bg-danger",
-                                            Severity.High => "bg-warning text-dark",
-                                            Severity.Medium => "bg-info text-dark",
-                                            _ => "bg-secondary"
-                                        };
-                                    }
-                                    <span class="badge @sevClass">@item.Severity.ToFriendlyString()</span>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill border border-dark text-dark">
-                                        <i class="bi bi-circle-fill me-1 small"></i> @item.Status.ToFriendlyString()
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="small">@item.ReportedAt.ToString("dd/MM/yyyy")</div>
-                                    <div class="text-muted small">@item.ReportedAt.ToString("HH:mm")</div>
-                                </td>
-                                <td>
-                                    @if (string.IsNullOrEmpty(item.NameTeamMember))
-                                    {
-                                        <span class="text-danger small italic"><i class="bi bi-person-x"></i> Sin asignar</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-dark small fw-bold"><i class="bi bi-person-check text-success"></i> @item.NameTeamMember</span>
-                                    }
-                                </td>
-                                <td class="text-end">
-                                    <div class="btn-group shadow-sm">
-                                        <!-- Botón Asignar -->
-                                        <button type="button" class="btn btn-sm btn-outline-primary" title="Asignar Responsable"
-                                                onclick="openModal('@Url.Page("./Index", "AssignModal", new { id = item.Id })')">
-                                            <i class="bi bi-person-plus-fill"></i>
-                                        </button>
-                                        <!-- Botón Editar -->
-                                        <button type="button" class="btn btn-sm btn-outline-warning" title="Editar"
-                                                onclick="openModal('@Url.Page("./Index", "EditModal", new { id = item.Id })')">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                        <!-- Botón Inspeccionar imagen -->
-                                        @if (!string.IsNullOrEmpty(item.ScreenshotUrl))
-                                        {
-                                            <button type="button" class="btn btn-sm btn-outline-info" title="Ver Captura"
-                                                    onclick="openModal('@Url.Page("./Index", "ScreenshotModal", new { id = item.Id })')">
-                                                <i class="bi bi-camera-fill"></i>
-                                            </button>
-                                        }
-                                        <!-- Botón Eliminar -->
-                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar"
-                                                onclick="openModal('@Url.Page("./Index", "DeleteModal", new { id = item.Id })')">
-                                            <i class="bi bi-trash3"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="6" class="text-center py-5">
-                                <i class="bi bi-clipboard-x display-4 text-muted"></i>
-                                <p class="mt-2 text-muted">No se encontraron incidentes que coincidan con los criterios.</p>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+    <div id="tableContainer" class="card shadow-sm border-0">
+        <partial name="_IncidentList" model="Model" />
     </div>
 </div>
 
@@ -153,8 +58,37 @@
     <script>
         const modalElement = document.getElementById('formModal');
         const modal = new bootstrap.Modal(modalElement);
-        const modalBody = document.querySelector('#modalContent');
+        const modalBody = document.getElementById('modalContent');
+        const tableContainer = document.getElementById('tableContainer');
+        const filterForm = document.getElementById('filterForm');
 
+        const loadTable = async () => {
+            tableContainer.style.opacity = '0.5';
+            const formData = new URLSearchParams(new FormData(filterForm));
+            formData.set('isPartial', 'true');
+            try {
+                const response = await fetch(`?${formData.toString()}`);
+                const html = await response.text();
+                tableContainer.innerHTML = html;
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'No se pudo actualizar la tabla', 'error');
+            } finally {
+                tableContainer.style.opacity = '1';
+            }
+        };
+
+        const changePage = (page) => {
+            document.getElementById('currentPageInput').value = page;
+            loadTable();
+        };
+        
+        filterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            document.getElementById('currentPageInput').value = 1;
+            loadTable();
+        });
+        
         const openModal = async (url) => {
             modalBody.innerHTML = `
                 <div class="p-5 text-center">
@@ -206,7 +140,7 @@
                         timer: 1500,
                         showConfirmButton: false
                     });
-                    location.reload();
+                    loadTable();
                 } else {
                     btn.disabled = false;
                     btn.innerHTML = originalText;

@@ -19,12 +19,13 @@
     <!-- Filtros -->
     <div class="card shadow-sm mb-4 border-0">
         <div class="card-body bg-light rounded">
-            <form method="get" class="row g-3">
+            <form id="filterForm" method="get" class="row g-3">
+                <input type="hidden" asp-for="CurrentPage" id="currentPageInput" />
                 <div class="col-md-5">
                     <label class="form-label fw-bold">Buscar por nombre o email</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                        <input asp-for="SearchName" class="form-control" placeholder="Ej: Juan Pérez o juan@empresa.com..." />
+                        <input asp-for="SearchName" class="form-control" placeholder="Ej: Juan Pérez..." />
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -35,104 +36,16 @@
                 </div>
                 <div class="col-md-3 d-flex align-items-end gap-2">
                     <button type="submit" class="btn btn-dark w-100">Filtrar</button>
-                    <a asp-page="./Index" class="btn btn-outline-secondary w-100">Limpiar</a>
+                    <a href="/team" class="btn btn-outline-secondary w-100">Limpiar</a>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Tabla -->
-    <div class="card shadow-sm border-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th style="width: 30%">Miembro e ID</th>
-                        <th>Correo Electrónico</th>
-                        <th>Rol / Posición</th>
-                        <th class="text-end">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.TeamMembers.Any())
-                    {
-                        foreach (var item in Model.TeamMembers)
-                        {
-                            <tr>
-                                <td>
-                                    <div class="fw-bold text-primary">@item.Name</div>
-                                    <small class="text-muted text-uppercase" style="font-size: 0.7rem;">ID: @item.Id.ToString().Substring(0, 8)...</small>
-                                </td>
-                                <td>
-                                    <div class="text-dark"><i class="bi bi-envelope me-2 text-muted"></i>@item.Email</div>
-                                </td>
-                                <td>
-                                    @{
-                                        var roleClass = item.Role.ToString() switch {
-                                            "Admin" => "bg-dark",
-                                            "Manager" => "bg-purple text-white",
-                                            "Developer" => "bg-primary",
-                                            _ => "bg-info text-dark"
-                                        };
-                                    }
-                                    <span class="badge @roleClass">
-                                        <i class="bi bi-person-badge me-1"></i> @Model.GetRoleDisplay(item.Role)
-                                    </span>
-                                </td>
-                                <td class="text-end">
-                                    <div class="btn-group shadow-sm">
-                                        <!-- Botón Editar -->
-                                        <button type="button" class="btn btn-sm btn-outline-warning" title="Editar Miembro"
-                                                onclick="openModal('@Url.Page("./Index", "EditModal", new { id = item.Id })')">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                        <!-- Botón Eliminar -->
-                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Eliminar Miembro"
-                                                onclick="openModal('@Url.Page("./Index", "DeleteModal", new { id = item.Id })')">
-                                            <i class="bi bi-trash3"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="4" class="text-center py-5">
-                                <i class="bi bi-people display-4 text-muted"></i>
-                                <p class="mt-2 text-muted">No se encontraron miembros del equipo.</p>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+    <div id="tableContainer" class="card shadow-sm border-0">
+        <partial name="_TeamMemberList" model="Model" />
     </div>
-
-    <!-- Paginación -->
-    @if (Model.TotalPages > 1)
-    {
-        <nav class="mt-4">
-            <ul class="pagination justify-content-center">
-                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
-                    <a class="page-link shadow-sm" asp-page="./Index" asp-route-CurrentPage="@(Model.CurrentPage - 1)" 
-                       asp-route-SearchName="@Model.SearchName" asp-route-SearchRole="@Model.SearchRole">Anterior</a>
-                </li>
-                @for (int i = 1; i <= Model.TotalPages; i++)
-                {
-                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                        <a class="page-link shadow-sm" asp-page="./Index" asp-route-CurrentPage="@i"
-                           asp-route-SearchName="@Model.SearchName" asp-route-SearchRole="@Model.SearchRole">@i</a>
-                    </li>
-                }
-                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
-                    <a class="page-link shadow-sm" asp-page="./Index" asp-route-CurrentPage="@(Model.CurrentPage + 1)"
-                       asp-route-SearchName="@Model.SearchName" asp-route-SearchRole="@Model.SearchRole">Siguiente</a>
-                </li>
-            </ul>
-        </nav>
-    }
 </div>
 
 <!-- Modal -->
@@ -145,10 +58,39 @@
 
 @section Scripts {
     <script>
+        const tableContainer = document.getElementById('tableContainer');
         const modalElement = document.getElementById('formModal');
+        const filterForm = document.getElementById('filterForm');
         const modal = new bootstrap.Modal(modalElement);
-        const modalBody = document.querySelector('#modalContent');
+        const modalBody = document.getElementById('modalContent');
 
+        const loadTable = async () => {
+            tableContainer.style.opacity = '0.5';
+            const formData = new URLSearchParams(new FormData(filterForm));
+            formData.set('isPartial', 'true');
+
+            try {
+                const response = await fetch(`?${formData.toString()}`);
+                const html = await response.text();
+                tableContainer.innerHTML = html;
+            } catch (err) {
+                Swal.fire('Error', 'No se pudo actualizar la tabla', 'error');
+            } finally {
+                tableContainer.style.opacity = '1';
+            }
+        };
+
+        const changePage = (page) => {
+            document.getElementById('currentPageInput').value = page;
+            loadTable();
+        };
+
+        filterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            document.getElementById('currentPageInput').value = 1;
+            loadTable();
+        });
+        
         const openModal = async (url) => {
             modalBody.innerHTML = `
                 <div class="p-5 text-center">
@@ -200,7 +142,7 @@
                         timer: 1500,
                         showConfirmButton: false
                     });
-                    location.reload();
+                    loadTable();
                 } else {
                     btn.disabled = false;
                     btn.innerHTML = originalText;

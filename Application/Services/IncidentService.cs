@@ -99,13 +99,13 @@ public class IncidentService : IIncidentService
         }
     }
 
-    public async Task<IEnumerable<IncidentDto>> GetAllIncidentsAsync(IncidentQueryDto query)
+    public async Task<(IEnumerable<IncidentDto> Items, int TotalRecords)> GetAllIncidentsAsync(IncidentQueryDto query)
     {
         _logger.LogDebug("Consultando incidentes paginados. Filtros: {Name}, {Severity}", query.name, query.severity);
 
         var (items, totalCount) = await _incidentRepository.GetPagedAsync(query.name, query.severity, query.page, query.size);
         
-        return items.ToDtoList();
+        return (items.ToDtoList(), totalCount);
     }
 
     public async Task<Result<IncidentDto>> GetByIdAsync(Guid id)

@@ -60,11 +60,16 @@ public class IndexModel : PageModel
         
         TotalRecords = result.TotalRecords;
     }
-    
-    public async Task OnGetAsync()
+
+    public async Task<IActionResult> OnGetAsync(bool isPartial = false)
     {
         ChargeRoleOptions();
         await ChargeTeamMembersAsync();
+        if (isPartial)
+        {
+            return Partial("_TeamMemberList", this);
+        }
+        return Page();
     }
     
     #region Modales

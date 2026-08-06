@@ -34,16 +34,26 @@ public class IndexModel : PageModel
     public int TotalRecords { get; set; }
     public int TotalPages => (int)Math.Ceiling((double)TotalRecords / PageSize);
     
+    public bool IsPartial { get; set; }
+    
     public IEnumerable<IncidentDto> Incidents { get; set; } = new List<IncidentDto>();
     public IEnumerable<SelectListItem> SeverityOptions { get; set; } = new List<SelectListItem>();
     public IEnumerable<SelectListItem> TeamMemberOptions { get; set; } = new List<SelectListItem>();
 
-    public async Task OnGetAsync()
+    public async Task<IActionResult> OnGetAsync(bool isPartial = false)
     {
         ChargeSeverityOptions();
         var query = new IncidentQueryDto(SearchName, FilterSeverity, CurrentPage, PageSize);
-        Incidents = await _incidentService.GetAllIncidentsAsync(query);
-        TotalRecords = Incidents.Count(); 
+        var pagedResult = await _incidentService.GetAllIncidentsAsync(query); 
+        
+        Incidents = pagedResult.Items; 
+        TotalRecords = pagedResult.TotalRecords;
+
+        if (isPartial)
+        {
+            return Partial("_IncidentList", this);
+        }
+        return Page();
     }
 
     private void ChargeSeverityOptions()
