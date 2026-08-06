@@ -14,6 +14,8 @@ public class IncidentService : IIncidentService
 {
     private readonly IIncidentRepository _incidentRepository;
     private readonly ITeamMemberRepository _teamMemberRepository;
+    private readonly IFileStorageService _storageService;
+    
     private readonly IValidator<CreateIncidentRequest> _createValidator;
     private readonly IValidator<UpdateIncidentRequest> _updateValidator;
     private readonly ILogger<IncidentService> _logger;
@@ -21,12 +23,14 @@ public class IncidentService : IIncidentService
     public IncidentService(
         IIncidentRepository incidentRepository, 
         ITeamMemberRepository teamMemberRepository,
+        IFileStorageService storageService,
         IValidator<CreateIncidentRequest> createValidator, 
         IValidator<UpdateIncidentRequest> updateValidator, 
         ILogger<IncidentService> logger)
     {
         _incidentRepository = incidentRepository;
         _teamMemberRepository = teamMemberRepository;
+        _storageService = storageService;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _logger = logger;
@@ -138,6 +142,18 @@ public class IncidentService : IIncidentService
             return Result<IncidentDto>.Failure("Incidente no encontrado.");
         }
         
+        if (!string.IsNullOrEmpty(incident.ScreenshotUrl) && 
+            incident.ScreenshotUrl != request.ScreenshotUrl)
+        {
+            var oldPublicId = GetPublicIdFromUrl(incident.ScreenshotUrl);
+            if (oldPublicId != null)
+            {
+                await _storageService.DeleteImageAsync(oldPublicId);
+                _logger.LogInformation("Imagen reemplazada y/o eliminada de Cloudinary: {PublicId}", oldPublicId);
+            }
+                
+        }
+        
         if (incident.Title != request.Title)
             incident.ChangeTitle(request.Title);
         
@@ -170,12 +186,35 @@ public class IncidentService : IIncidentService
         {
             return Result<IncidentDto>.Failure("El incidente no existe.");
         }
-
+        
+        var imageUrl = incident.ScreenshotUrl;
         _incidentRepository.Delete(incident);
         await _incidentRepository.SaveChangesAsync();
+        if (!string.IsNullOrEmpty(imageUrl))
+        {
+            var publicId = GetPublicIdFromUrl(imageUrl);
+            if (publicId != null)
+            {
+                await _storageService.DeleteImageAsync(publicId);
+                _logger.LogInformation("Imagen eliminada de Cloudinary: {PublicId}", publicId);
+            }
+        }
 
         _logger.LogWarning("Incidente eliminado: {IncidentId}", id);
-        
-        return Result<IncidentDto>.Success(incident.ToDto(), "Incidente eliminado permanentemente.");
+        return Result<IncidentDto>.Success(incident.ToDto(), "Incidente y su imagen eliminados.");
+    }
+    
+    private string? GetPublicIdFromUrl(string url)
+    {
+        if (string.IsNullOrEmpty(url)) return null;
+        try 
+        {
+            var uri = new Uri(url);
+            var segments = uri.AbsolutePath.Split('/');
+            var fileNameWithExtension = segments.Last();
+            var fileName = Path.GetFileNameWithoutExtension(fileNameWithExtension);
+            return $"devpulse/incidents/{fileName}";
+        }
+        catch { return null; }
     }
 }
