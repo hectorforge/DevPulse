@@ -1,4 +1,18 @@
 services:
+  web-app:
+    image: devpulse-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Database=DevPulseDb;Username=postgres;Password=tu_password
+    depends_on:
+      - db
+  
+  
   db:
     image: postgres:15-alpine
     container_name: devpulse_db
