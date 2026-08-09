@@ -1,117 +1,98 @@
----
+# 🚀 DevPulse - Incident & Resilience Management System
 
-# 🚀 DevPulse: Enterprise Incident Management System
+**DevPulse** es una solución empresarial de misión crítica diseñada para centralizar, gestionar y analizar incidentes tecnológicos. El objetivo principal es minimizar el tiempo de inactividad (Downtime) y fomentar una cultura de aprendizaje continuo mediante el análisis post-incidente.
 
-**DevPulse** es una plataforma de nivel empresarial diseñada para equipos de ingeniería que necesitan gestionar el ciclo de vida completo de incidentes técnicos, desde la detección hasta el análisis post-mortem.
+![Dashboard Principal](meta/images/main.png)
 
-A diferencia de un simple CRUD, esta aplicación implementa una **Arquitectura Limpia (Clean Architecture)** y utiliza el motor de **Razor Pages** para ofrecer una experiencia SSR (Server-Side Rendering) rápida, segura y fuertemente tipada.
+## 💼 El Negocio: ¿Qué resuelve DevPulse?
 
----
-
-## 🛠️ Stack Tecnológico
-
-*   **Backend:** .NET 9 (C#)
-*   **Web UI:** ASP.NET Core Razor Pages (SSR)
-*   **Base de Datos:** PostgreSQL
-*   **ORM:** Entity Framework Core (Code First)
-*   **Contenedores:** Docker & Docker Compose
-*   **Validación:** FluentValidation
-*   **Logging:** Serilog (Estructurado)
-*   **Estilos:** Tailwind CSS / Bootstrap 5
+En entornos de desarrollo y operaciones, los fallos son inevitables. DevPulse profesionaliza la respuesta ante estos fallos permitiendo:
+1.  **Registro Inmediato:** Capturar incidentes con evidencias visuales.
+2.  **Gestión de Equipos:** Asignar responsables según el rol (Dev, Ops, QA).
+3.  **Análisis de Causa Raíz:** Documentar qué falló y cómo evitarlo en el futuro (Post-Mortems).
+4.  **Auditoría y Trazabilidad:** Mantener un historial íntegro de quién hizo qué y cuándo.
 
 ---
 
-## 🏗️ Arquitectura del Proyecto
+## 🛠️ Funcionalidades del Sistema
 
-El proyecto sigue los principios de **Separación de Preocupaciones (SoC)** y **SOLID**:
+### 1. Panel de Control (Dashboard)
+Visualización global del estado operativo de la plataforma.
+*   **Vistas principales:**
+   *   Dashboard general: ![Dash](meta/images/dash.png)
 
-*   **DevPulse.Domain**: Núcleo del negocio. Contiene entidades (Incidents, PostMortems), Enums y reglas de validación de dominio. Cero dependencias externas.
-*   **DevPulse.Application**: Capa de orquestación. Define las interfaces de servicios, DTOs y la lógica de negocio principal.
-*   **DevPulse.Infrastructure**: Implementación de persistencia (EF Core), configuración de PostgreSQL y servicios externos (como el motor de generación de correos).
-*   **DevPulse.Web (Razor Pages)**: La capa de presentación. Gestiona las rutas, el renderizado de HTML en el servidor y la interacción con el usuario.
+### 2. Gestión de Incidentes
+El corazón del sistema. Permite el ciclo de vida completo de un fallo técnico.
+*   **Listado y Búsqueda:** ![Listar](meta/images/listar-incidentes.png)
+*   **Creación con Validaciones:** Control estricto de datos mediante FluentValidation.
+   *   Formulario: ![Crear](meta/images/crear-incidente.png)
+   *   Validaciones en tiempo real: ![Validar](meta/images/crear-incidente-validaciones.png)
+*   **Asignación de Personal:** Capacidad de delegar tareas a miembros específicos.
+   *   Modal de asignación: ![Asignar](meta/images/asignar-member-incidente.png)
+*   **Evidencias:** Visualización de pruebas cargadas (Cloudinary).
+   *   Vista de evidencia: ![Prueba](meta/images/ver-prueba-incidente.png)
+*   **Mantenimiento:**
+   *   Edición: ![Editar](meta/images/editar-incidente.png) | Eliminación: ![Eliminar](meta/images/eliminar-incidente.png)
+
+### 3. Módulo de Post-Mortems
+Herramienta analítica para documentar la "autopsia" de los incidentes cerrados.
+*   **Módulo Principal:** ![PostMortem Modulo](meta/images/postmortem-module.png)
+*   **Filtros Dinámicos:** Búsqueda avanzada por causa raíz. ![Filtros](meta/images/postmortem-symbols-dinamicos.png)
+*   **Creación y Gestión:**
+   *   Registro: ![Crear PM](meta/images/crear-porstmortem.png)
+   *   Validaciones: ![Validar PM](meta/images/crear-postmortem-validaciones.png)
+   *   Edición: ![Editar PM](meta/images/editar-portmortem.png) | Eliminación: ![Eliminar PM](meta/images/eliminar-postmortem.png)
+
+### 4. Gestión de Equipo (Team Members)
+Administración del capital humano que responde a las emergencias.
+*   **Gestión de Miembros:** ![Team Module](meta/images/team-module.png)
+*   **Registro de Talento:**
+   *   Alta de miembro: ![Crear Team](meta/images/crear-team-member.png)
+   *   Validación de roles: ![Validar Team](meta/images/crear-team-member-validaciones.png)
+*   **Mantenimiento:**
+   *   Edición: ![Editar Team](meta/images/editar-team-member.png) | Eliminación: ![Eliminar Team](meta/images/eliminar-team-member.png)
 
 ---
 
-## 🔥 Características Principales
+## 🏗️ Arquitectura y Lógica de Aplicación
 
-### 1. Gestión de Incidentes Críticos
-*   **Ciclo de Vida Realista:** Los incidentes transitan por estados: *Reported → Investigating → Identified → Resolved → Closed*.
-*   **Niveles de Severidad:** Clasificación dinámica (Low, Medium, High, Critical) con impacto visual en la UI.
-*   **Asignación de Responsables:** Vinculación de ingenieros a incidentes específicos.
+El sistema está construido bajo una **Arquitectura de Capas (N-Tier)**, garantizando el desacoplamiento mediante el uso intensivo de Interfaces en la capa de `Application`.
 
-### 2. Motor de Reportes Post-Mortem
-*   Cuando un incidente se marca como "Resolved", el sistema habilita la creación de un **Post-Mortem**.
-*   Permite documentar la "Causa Raíz" (Root Cause), el impacto medido y las acciones preventivas para evitar recurrencia.
+### Servicios Core (Interfaces)
 
-### 3. Generación Dinámica de Plantillas (Razor Engine)
-*   **Notificaciones HTML:** El sistema utiliza archivos `.cshtml` como plantillas para generar correos electrónicos y reportes PDF.
-*   **Tipado Fuerte:** A diferencia de usar simples strings, las plantillas reciben modelos de C# (`IncidentSummaryViewModel`), garantizando que los reportes siempre tengan datos válidos.
+El comportamiento del negocio está definido por contratos estrictos:
 
-### 4. Resiliencia y Seguridad
-*   **Docker Ready:** Configuración lista para producción con Docker Compose (App + Postgres).
-*   **Validación Robusta:** Uso de `FluentValidation` para asegurar que ningún incidente se registre con datos inconsistentes antes de llegar a la base de datos.
+*   **`IIncidentService`**: Orquestador del ciclo de vida del incidente (Creación, búsqueda paginada, asignación de miembros y actualizaciones).
+*   **`IPostMortemService`**: Gestiona la documentación post-incidente y filtros por causa raíz.
+*   **`ITeamMemberService`**: Administra el catálogo de personal y sus roles dentro de la organización.
+*   **`IFileStorageService`**: Abstracción para el manejo de archivos (implementado con **Cloudinary**), permitiendo `UploadImageAsync` y `DeleteImageAsync`.
 
----
-
-## 📋 El Modelo de Negocio
-
-En el mundo empresarial, el tiempo de inactividad (downtime) cuesta miles de dólares. **DevPulse** soluciona esto mediante:
-1.  **Visibilidad:** Un dashboard centralizado para que los stakeholders vean el estado de la infraestructura.
-2.  **Transparencia:** Notificaciones automáticas basadas en plantillas cuando la severidad es "Critical".
-3.  **Mejora Continua:** Obliga a los equipos a realizar análisis Post-Mortem para mejorar la calidad del software a largo plazo.
+### Stack Tecnológico
+*   **Core:** .NET 8 (ASP.NET Core Razor Pages)
+*   **Persistencia:** Entity Framework Core con PostgreSQL.
+*   **Storage:** Cloudinary API para gestión de imágenes en la nube.
+*   **Validación:** FluentValidation para lógica de negocio desacoplada de la UI.
+*   **Frontend:** Bootstrap 5, jQuery y validación unobtrusive.
+*   **Infraestructura:** Docker & Docker Compose para portabilidad total.
 
 ---
 
 ## 🚀 Instalación y Despliegue
 
-Solo necesitas tener instalado **Docker** y **.NET 9 SDK**.
+### Requisitos
+*   .NET 8 SDK
+*   Docker Desktop
+*   Credenciales de Cloudinary
 
-1. **Clonar el repositorio:**
-   ```bash
-   git clone https://github.com/tu-usuario/DevPulse.git
-   cd DevPulse
-   ```
+### Ejecución Rápida (Docker)
+```bash
+docker-compose up --build
+```
 
-2. **Levantar la infraestructura (PostgreSQL):**
-   ```bash
-   docker-compose up -d
-   ```
-
-3. **Ejecutar las migraciones y la App:**
-   ```bash
-   
-   dotnet ef migrations add InitialCreate --project Infrastructure --startup-project Web
-   
-   dotnet ef database update --project Infrastructure --startup-project Web
-   
-   dotnet run --project Web
-   ```
-
-4. **Acceder a la plataforma:**
-   Abre tu navegador en `https://localhost:5001`
+### Aplicar Migraciones Manuales
+```bash
+dotnet ef database update --project Infrastructure --startup-project Web
+```
 
 ---
-
-## 📸 Screenshots (Próximamente)
-> *Aquí puedes añadir capturas de tu Dashboard de incidentes y el formulario de creación.*
-
----
-
-## 🛡️ Roadmap de Desarrollo
-- [ ] Implementar autenticación con ASP.NET Core Identity.
-- [ ] Exportación de reportes Post-Mortem a PDF usando librerías de terceros.
-- [ ] Dashboard de estadísticas con gráficos (Chart.js) sobre el tiempo promedio de resolución (MTTR).
-
----
-
-## ✉️ Contacto
-Desarrollado por **[Tu Nombre]** - [Tu LinkedIn](https://linkedin.com/in/tu-perfil) - [Tu Email](mailto:tuemail@ejemplo.com)
-
----
-
-### ¿Qué hace que este proyecto destaque en tu portfolio?
-
-1.  **Uso de PostgreSQL en Docker:** No usas una base de datos en memoria; usas una real, lo cual demuestra que entiendes entornos de desarrollo modernos.
-2.  **Lógica de Negocio Real:** No es una lista de tareas (To-Do List). Es un sistema de "Incident Management", algo que los managers de ingeniería ven todos los días en herramientas como PagerDuty o Jira.
-3.  **Razor Pages vs MVC:** Al usar Razor Pages, demuestras que estás al día con las recomendaciones actuales de Microsoft para aplicaciones web SSR que no requieren la complejidad de un SPA (Single Page Application).
-4.  **Arquitectura Limpia:** Aunque no uses MediatR, el hecho de separar la lógica en `Application` e `Infrastructure` muestra que sabes escribir código mantenible y escalable (Enterprise-grade).
+*Desarrollado con ❤️ en JetBrains Rider.*
