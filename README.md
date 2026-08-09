@@ -1,98 +1,104 @@
+
 # 🚀 DevPulse - Incident & Resilience Management System
 
-**DevPulse** es una solución empresarial de misión crítica diseñada para centralizar, gestionar y analizar incidentes tecnológicos. El objetivo principal es minimizar el tiempo de inactividad (Downtime) y fomentar una cultura de aprendizaje continuo mediante el análisis post-incidente.
+**DevPulse** es una plataforma de gestión de incidentes técnicos de alto rendimiento. A diferencia de las aplicaciones tradicionales de multipágina, DevPulse utiliza un patrón de **Partial-Rendering Asíncrono** para ofrecer una experiencia fluida de SPA (Single Page Application) sin la sobrecarga de frameworks pesados de frontend o librerías heredadas como jQuery.
 
 ![Dashboard Principal](meta/images/main.png)
 
-## 💼 El Negocio: ¿Qué resuelve DevPulse?
-
-En entornos de desarrollo y operaciones, los fallos son inevitables. DevPulse profesionaliza la respuesta ante estos fallos permitiendo:
-1.  **Registro Inmediato:** Capturar incidentes con evidencias visuales.
-2.  **Gestión de Equipos:** Asignar responsables según el rol (Dev, Ops, QA).
-3.  **Análisis de Causa Raíz:** Documentar qué falló y cómo evitarlo en el futuro (Post-Mortems).
-4.  **Auditoría y Trazabilidad:** Mantener un historial íntegro de quién hizo qué y cuándo.
+## 💼 Valor de Negocio
+DevPulse profesionaliza la respuesta operativa ante fallos:
+*   **Ciclo de Vida de Incidentes:** Reporte, asignación de responsables y resolución.
+*   **Gestión de Resiliencia:** Documentación de Post-Mortems con análisis de causa raíz para prevenir recurrencia.
+*   **Almacenamiento en la Nube:** Integración nativa con Cloudinary para evidencias fotográficas de fallos.
 
 ---
 
-## 🛠️ Funcionalidades del Sistema
+## 🏗️ Arquitectura Técnica Avanzada
 
-### 1. Panel de Control (Dashboard)
-Visualización global del estado operativo de la plataforma.
-*   **Vistas principales:**
-   *   Dashboard general: ![Dash](meta/images/dash.png)
+### 1. UX "SPA-like" con Vanilla JS & Razor Partials
+El sistema implementa una arquitectura de comunicación fluida entre el servidor y el cliente:
+*   **Zero jQuery:** Todo el frontend está construido con **Vanilla JS** nativo, utilizando `fetch` para peticiones asíncronas y manipulación directa del DOM.
+*   **Partial View Updates:** El servidor no recarga la página completa. El `IndexModel` detecta flags `isPartial` para devolver únicamente el HTML necesario (`_IncidentList`), inyectándolo dinámicamente.
+*   **Dynamic Modals:** Los formularios de creación, edición y borrado se cargan mediante `PartialViewResult` bajo demanda, optimizando el ancho de banda y la velocidad de carga inicial.
 
-### 2. Gestión de Incidentes
-El corazón del sistema. Permite el ciclo de vida completo de un fallo técnico.
-*   **Listado y Búsqueda:** ![Listar](meta/images/listar-incidentes.png)
-*   **Creación con Validaciones:** Control estricto de datos mediante FluentValidation.
-   *   Formulario: ![Crear](meta/images/crear-incidente.png)
-   *   Validaciones en tiempo real: ![Validar](meta/images/crear-incidente-validaciones.png)
-*   **Asignación de Personal:** Capacidad de delegar tareas a miembros específicos.
-   *   Modal de asignación: ![Asignar](meta/images/asignar-member-incidente.png)
-*   **Evidencias:** Visualización de pruebas cargadas (Cloudinary).
-   *   Vista de evidencia: ![Prueba](meta/images/ver-prueba-incidente.png)
-*   **Mantenimiento:**
-   *   Edición: ![Editar](meta/images/editar-incidente.png) | Eliminación: ![Eliminar](meta/images/eliminar-incidente.png)
-
-### 3. Módulo de Post-Mortems
-Herramienta analítica para documentar la "autopsia" de los incidentes cerrados.
-*   **Módulo Principal:** ![PostMortem Modulo](meta/images/postmortem-module.png)
-*   **Filtros Dinámicos:** Búsqueda avanzada por causa raíz. ![Filtros](meta/images/postmortem-symbols-dinamicos.png)
-*   **Creación y Gestión:**
-   *   Registro: ![Crear PM](meta/images/crear-porstmortem.png)
-   *   Validaciones: ![Validar PM](meta/images/crear-postmortem-validaciones.png)
-   *   Edición: ![Editar PM](meta/images/editar-portmortem.png) | Eliminación: ![Eliminar PM](meta/images/eliminar-postmortem.png)
-
-### 4. Gestión de Equipo (Team Members)
-Administración del capital humano que responde a las emergencias.
-*   **Gestión de Miembros:** ![Team Module](meta/images/team-module.png)
-*   **Registro de Talento:**
-   *   Alta de miembro: ![Crear Team](meta/images/crear-team-member.png)
-   *   Validación de roles: ![Validar Team](meta/images/crear-team-member-validaciones.png)
-*   **Mantenimiento:**
-   *   Edición: ![Editar Team](meta/images/editar-team-member.png) | Eliminación: ![Eliminar Team](meta/images/eliminar-team-member.png)
+### 2. Gestión de Estado y Peticiones Asíncronas
+Se utilizan técnicas modernas para garantizar la integridad y el performance:
+*   **Antiforgery Tokens:** Manejo manual de tokens de seguridad en peticiones `POST` asíncronas mediante headers personalizados.
+*   **FormData API:** Manejo nativo de archivos (screenshots) y datos complejos de formulario sin necesidad de serialización manual.
+*   **Manual Error Mapping:** Los errores de validación del lado del servidor (FluentValidation) se devuelven como `JsonResult` y se mapean dinámicamente a los elementos del DOM.
 
 ---
 
-## 🏗️ Arquitectura y Lógica de Aplicación
+## 📸 Recorrido Visual (Módulos)
 
-El sistema está construido bajo una **Arquitectura de Capas (N-Tier)**, garantizando el desacoplamiento mediante el uso intensivo de Interfaces en la capa de `Application`.
+### 🚨 Gestión de Incidentes
+Control total sobre los fallos técnicos reportados.
+*   **Centro de Incidentes (SPA View):** ![Listar](meta/images/listar-incidentes.png)
+*   **Flujo de Creación (Modal Asíncrono):** ![Crear](meta/images/crear-incidente.png)
+*   **Validación de Negocio:** ![Validar](meta/images/crear-incidente-validaciones.png)
+*   **Asignación de Expertos:** ![Asignar](meta/images/asignar-member-incidente.png)
+*   **Evidencias en la Nube:** ![Prueba](meta/images/ver-prueba-incidente.png)
 
-### Servicios Core (Interfaces)
+### 🧠 Post-Mortems y Aprendizaje
+*   **Módulo de Análisis:** ![PostMortem](meta/images/postmortem-module.png)
+*   **Filtros de Búsqueda Dinámica:** ![Filtros](meta/images/postmortem-symbols-dinamicos.png)
+*   **Reportes Técnicos:** ![Crear PM](meta/images/crear-porstmortem.png)
 
-El comportamiento del negocio está definido por contratos estrictos:
-
-*   **`IIncidentService`**: Orquestador del ciclo de vida del incidente (Creación, búsqueda paginada, asignación de miembros y actualizaciones).
-*   **`IPostMortemService`**: Gestiona la documentación post-incidente y filtros por causa raíz.
-*   **`ITeamMemberService`**: Administra el catálogo de personal y sus roles dentro de la organización.
-*   **`IFileStorageService`**: Abstracción para el manejo de archivos (implementado con **Cloudinary**), permitiendo `UploadImageAsync` y `DeleteImageAsync`.
-
-### Stack Tecnológico
-*   **Core:** .NET 8 (ASP.NET Core Razor Pages)
-*   **Persistencia:** Entity Framework Core con PostgreSQL.
-*   **Storage:** Cloudinary API para gestión de imágenes en la nube.
-*   **Validación:** FluentValidation para lógica de negocio desacoplada de la UI.
-*   **Frontend:** Bootstrap 5, jQuery y validación unobtrusive.
-*   **Infraestructura:** Docker & Docker Compose para portabilidad total.
+### 👥 Administración de Equipos
+*   **Gestión de Roles y Miembros:** ![Team Module](meta/images/team-module.png)
 
 ---
 
-## 🚀 Instalación y Despliegue
+## 🛠️ Stack Tecnológico
 
-### Requisitos
-*   .NET 8 SDK
-*   Docker Desktop
-*   Credenciales de Cloudinary
+| Capa | Tecnologías |
+| :--- | :--- |
+| **Backend** | .NET 8 (C#), Razor Pages |
+| **Arquitectura** | N-Tier (Domain, Application, Infrastructure, Web) |
+| **Frontend** | **Vanilla JavaScript (ES6)**, CSS3, Bootstrap 5 |
+| **Base de Datos** | PostgreSQL (EF Core) |
+| **Servicios** | Cloudinary API (Storage), FluentValidation |
+| **UX/UI** | SweetAlert2 (Notificaciones), Partial Views (Razor) |
+| **DevOps** | Docker, Docker Compose |
 
-### Ejecución Rápida (Docker)
-```bash
-docker-compose up --build
-```
+---
 
-### Aplicar Migraciones Manuales
-```bash
-dotnet ef database update --project Infrastructure --startup-project Web
+## 💻 Detalles de Implementación (Backend)
+
+El core del sistema reside en el `IndexModel.cs`, que gestiona múltiples verbos y acciones mediante **Named Handler Methods**:
+
+```csharp
+// Ejemplo de carga dinámica de tabla sin recargar página
+public async Task<IActionResult> OnGetAsync(bool isPartial = false)
+{
+    var query = new IncidentQueryDto(SearchName, FilterSeverity, CurrentPage, PageSize);
+    var pagedResult = await _incidentService.GetAllIncidentsAsync(query); 
+    
+    Incidents = pagedResult.Items;
+    
+    return isPartial ? Partial("_IncidentList", this) : Page();
+}
+
+// Ejemplo de retorno JSON para validación y feedback
+public async Task<IActionResult> OnPostCreate(IncidentFormViewModel viewModel)
+{
+    // Lógica de carga a Cloudinary e inserción...
+    return new JsonResult(new { success = result.IsSuccess, message = result.Message, errors = result.ErrorsValidations });
+}
 ```
 
 ---
-*Desarrollado con ❤️ en JetBrains Rider.*
+
+## 🚀 Despliegue con Docker
+
+1. **Construir y levantar:**
+   ```bash
+   docker-compose up --build
+   ```
+   *Esto levantará el contenedor de la aplicación ASP.NET y la base de datos PostgreSQL.*
+
+2. **Acceso:**
+   La aplicación estará disponible en `http://localhost:5000`.
+
+---
+*Desarrollado con arquitectura limpia y performance de alto nivel en JetBrains Rider.*
