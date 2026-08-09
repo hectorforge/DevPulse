@@ -52,7 +52,8 @@
 
     <div class="modal-footer bg-light">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" class="btn @(Model.IsEdit ? "btn-warning" : "btn-primary") px-4">
+        <button type="submit" class="btn @(Model.IsEdit ? "btn-warning" : "btn-primary") px-4 shadow-sm">
+            <i class="bi bi-check-circle-fill me-2"></i>
             @(Model.IsEdit ? "Guardar Cambios" : "Crear Miembro")
         </button>
     </div>

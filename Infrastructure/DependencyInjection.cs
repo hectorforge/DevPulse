@@ -19,6 +19,7 @@ public static class DependencyInjection
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<IIncidentRepository,IncidentRepository>();
         services.AddScoped<ITeamMemberRepository,TeamMemberRepository>();
+        services.AddScoped<IPostMortemRepository, PostMortemRepository>();
         services.AddScoped<IFileStorageService, CloudinaryStorageService>();
         return services;
     }

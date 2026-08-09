@@ -36,7 +36,12 @@ public class IncidentService : IIncidentService
         _logger = logger;
         
     }
-    
+
+    public Task<IEnumerable<IncidentSelectDto>> SearchForSelect(string? term, int limit = 5, CancellationToken ct = default)
+    {
+        return _incidentRepository.SearchForSelectAsync(term, limit, ct);
+    }
+
     public async Task<Result<IncidentDto>> AssignTeamMemberAsync(AssignIncidentRequest request)
     {
         _logger.LogInformation("Asignando miembro {MemberId} al incidente {IncidentId}", 

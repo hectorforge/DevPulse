@@ -130,13 +130,6 @@ public class IndexModel : PageModel
     #endregion
 
     #region Acciones (JSON Results)
-    /*
-    public async Task<IActionResult> OnPostCreate(CreateIncidentRequest input)
-    {
-        var result = await _incidentService.CreateIncidentAsync(input);
-        return new JsonResult(new { success = result.IsSuccess, message = result.Message, errors = result.ErrorsValidations });
-    }*/
-    
     public async Task<IActionResult> OnPostCreate(IncidentFormViewModel viewModel)
     {
         string imageUrl = "";
@@ -157,13 +150,6 @@ public class IndexModel : PageModel
         var result = await _incidentService.CreateIncidentAsync(request);
         return new JsonResult(new { success = result.IsSuccess, message = result.Message, errors = result.ErrorsValidations });
     }
-
-    /*
-    public async Task<IActionResult> OnPostEdit(UpdateIncidentRequest input)
-    {
-        var result = await _incidentService.UpdateIncidentAsync(input);
-        return new JsonResult(new { success = result.IsSuccess, message = result.Message, errors = result.ErrorsValidations });
-    }*/
     
     public async Task<IActionResult> OnPostEdit(IncidentFormViewModel viewModel)
     {
@@ -203,6 +189,5 @@ public class IndexModel : PageModel
             errors = result.ErrorsValidations 
         });
     }
-
     #endregion
 }

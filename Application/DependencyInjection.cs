@@ -14,6 +14,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IIncidentService, IncidentService>();
         services.AddScoped<ITeamMemberService, TeamMemberService>();
+        services.AddScoped<IPostMortemService, PostMortemService>();
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         
         return services;

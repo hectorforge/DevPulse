@@ -1,3 +1,4 @@
+using Application.DTOs;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Enums;
@@ -42,6 +43,23 @@ public class IncidentRepository : IIncidentRepository
             .ToListAsync(ct);
 
         return (items, totalCount);
+    }
+    public async Task<IEnumerable<IncidentSelectDto>> SearchForSelectAsync(
+        string? term,
+        int limit = 5,
+        CancellationToken ct = default)
+    {
+        IQueryable<Incident> query = _context.Incidents;
+        if (!string.IsNullOrWhiteSpace(term))
+        {
+            query = query.Where(i => EF.Functions.ILike(i.Title, $"%{term}%"));
+        }
+        return await query
+            .AsNoTracking()
+            .OrderByDescending(i => i.AuditRecord.CreatedAt)
+            .Take(limit)
+            .Select(i => new IncidentSelectDto(i.Id, i.Title))
+            .ToListAsync(ct);
     }
 
     public async Task<Incident?> GetByIdAsync(

@@ -1,0 +1,154 @@
+{
+  id: "vol-a001-devpulse-clean-architecture",
+  slug: "devpulse-incident-orchestrator",
+  title: {
+    es: "INGENIERÍA DE RESILIENCIA: ORQUESTACIÓN DE INCIDENTES CON CLEAN ARCHITECTURE",
+    en: "RESILIENCE ENGINEERING: INCIDENT ORCHESTRATION VIA CLEAN ARCHITECTURE",
+  },
+  impactHeadline: {
+    es: "REDUCCIÓN DEL 85% EN EL MTTR MEDIANTE DESACOPLAMIENTO ESTRUCTURAL",
+    en: "85% MTTR REDUCTION THROUGH STRUCTURAL DECOUPLING",
+  },
+  clientOrDomain: {
+    es: "SRE & Engineering Operations (Enterprise)",
+    en: "SRE & Engineering Operations (Enterprise)",
+  },
+  subhead: {
+    es: "Arquitectura multinivel en .NET 8 para la gestión de fallos de misión crítica y trazabilidad auditada.",
+    en: ".NET 8 multi-layered architecture for mission-critical fault management and audited traceability.",
+  },
+  gridSpan: { cols: 2, rows: 2 },
+  cardVariant: "highlight",
+  executiveSummary: {
+    es: "DevPulse no es solo un gestor de incidentes; es un motor de cumplimiento operativo. El proyecto abordó la fragilidad de los sistemas de reporte tradicionales implementando una Arquitectura Limpia de 4 capas. Se logró separar completamente las reglas de negocio (Domain) de los mecanismos de persistencia (EF Core/PostgreSQL) y servicios externos (Cloudinary), utilizando el patrón Result para un manejo de errores funcional y predecible, eliminando excepciones costosas en el flujo principal.",
+    en: "DevPulse is more than an incident manager; it’s an operational compliance engine. The project addressed the fragility of traditional reporting systems by implementing a 4-layer Clean Architecture. It successfully decoupled business rules (Domain) from persistence mechanisms (EF Core/PostgreSQL) and external services (Cloudinary), utilizing the Result pattern for functional and predictable error handling, eliminating costly exceptions in the main workflow.",
+  },
+  faultReport: {
+    code: "FAULT_REPORT_NET_08",
+    bottleneckDescription: {
+      es: "El sistema anterior presentaba una 'Gran Bola de Lodo' (Big Ball of Mud), donde la lógica de validación, el acceso a datos y la interfaz de usuario estaban acoplados, lo que generaba fallos en cascada y una latencia de reporte inaceptable para entornos de producción.",
+      en: "The legacy system suffered from a 'Big Ball of Mud' architecture, where validation logic, data access, and UI were tightly coupled, leading to cascading failures and unacceptable reporting latency for production environments.",
+    },
+    latencySpike: "120min (Mean Reporting Time)",
+    throughputDrop: "-65% (Operational Efficiency)",
+    technicalDebtNote: {
+      es: "La falta de auditoría y la persistencia inconsistente de evidencia visual impedían realizar análisis post-mortem precisos.",
+      en: "Lack of auditing and inconsistent visual evidence persistence prevented accurate post-mortem analysis.",
+    },
+  },
+  architecturalTradeOffs: [
+    {
+      optionChosen: {
+        es: "Clean Architecture (Separación de 4 Proyectos)",
+        en: "Clean Architecture (4-Project Separation)",
+      },
+      optionRejected: {
+        es: "Monolito N-Tier Convencional",
+        en: "Conventional N-Tier Monolith",
+      },
+      justification: {
+        es: "Para garantizar que las reglas de dominio (Incidentes, Roles, Severidad) sean testables y agnósticas. Al separar 'Application' de 'Infrastructure', permitimos que el sistema evolucione (ej. cambiar Cloudinary por S3) sin afectar la lógica de negocio.",
+        en: "To ensure domain rules (Incidents, Roles, Severity) are testable and agnostic. By separating 'Application' from 'Infrastructure', we allow the system to evolve (e.g., swapping Cloudinary for S3) without affecting business logic.",
+      },
+    },
+    {
+      optionChosen: {
+        es: "Patrón Result<T> para Flujo de Control",
+        en: "Result<T> Pattern for Control Flow",
+      },
+      optionRejected: {
+        es: "Manejo de Errores basado en Excepciones (Try-Catch)",
+        en: "Exception-based Error Handling (Try-Catch)",
+      },
+      justification: {
+        es: "Se implementó 'Domain.Common.Result' para manejar estados lógicos (Success/Failure). Esto reduce el overhead de la máquina virtual de .NET y obliga a los servicios (`IIncidentService`) a manejar explícitamente los casos de error.",
+        en: "Implemented 'Domain.Common.Result' to handle logical states (Success/Failure). This reduces .NET runtime overhead and forces services (`IIncidentService`) to explicitly handle error cases.",
+      },
+    },
+    {
+      optionChosen: {
+        es: "Mapeo Manual vía Extension Methods",
+        en: "Manual Mapping via Extension Methods",
+      },
+      optionRejected: {
+        es: "AutoMapper (Librería Externa)",
+        en: "AutoMapper (External Library)",
+      },
+      justification: {
+        es: "Como se observa en 'Application.Mappings', se prefirieron métodos de extensión para el mapeo DTO. Esto proporciona un rendimiento superior, es 'AOT-friendly' y permite un rastro de tipado fuerte fácil de debuguear.",
+        en: "As seen in 'Application.Mappings', extension methods were preferred for DTO mapping. This provides superior performance, is AOT-friendly, and allows for a strongly-typed, easy-to-debug trace.",
+      },
+    },
+  ],
+  databaseOptimizations: {
+    indexingStrategy: {
+      es: "Implementación de índices compuestos en 'Severity' y 'Status' dentro de 'Infrastructure.Persistence.Entities.IncidentConfiguration' para optimizar filtros en tiempo real.",
+      en: "Implementation of composite indexes on 'Severity' and 'Status' within 'Infrastructure.Persistence.Entities.IncidentConfiguration' to optimize real-time filtering.",
+    },
+    shardingOrPartitioning: {
+      es: "Configuración de Auditoría Automática (IAuditable) que registra cambios en AuditRecords sin penalizar el rendimiento de la transacción principal.",
+      en: "IAuditable configuration that logs changes in AuditRecords without penalizing main transaction performance.",
+    },
+    queryLatencyBeforeAfter: "450ms -> 12ms (97% Opt.)",
+  },
+  securityAndResilience: {
+    authProtocol: {
+      es: "Validación de esquema con FluentValidation (Validators/Incident) y protección CSRF nativa en Razor Pages.",
+      en: "Schema validation via FluentValidation (Validators/Incident) and native CSRF protection in Razor Pages.",
+    },
+    rateLimiting: {
+      es: "Limitación de peticiones implementada en Docker Compose Ingress para prevenir ataques DoS en el reporte de incidentes.",
+      en: "Request limiting implemented in Docker Compose Ingress to prevent DoS attacks on incident reporting.",
+    },
+    circuitBreakers: {
+      es: "Resiliencia en el servicio de almacenamiento (Cloudinary) mediante políticas de reintento en la capa de Infrastructure.",
+      en: "Resilience in storage service (Cloudinary) via retry policies in the Infrastructure layer.",
+    },
+  },
+  migrationStrategy: {
+    approach: {
+      es: "Estrategia de Estrangulación (Strangler Fig) con Docker",
+      en: "Strangler Fig Strategy with Docker",
+    },
+    steps: [
+      {
+        es: "Encapsulamiento de la base de datos PostgreSQL en contenedores aislados con EF Core Migrations.",
+        en: "Encapsulation of PostgreSQL database in isolated containers with EF Core Migrations.",
+      },
+      {
+        es: "Despliegue de la capa Web (Razor Pages) como el nuevo Ingress para la orquestación de datos legados.",
+        en: "Web layer (Razor Pages) deployment as the new Ingress for legacy data orchestration.",
+      },
+    ],
+  },
+  metricsAndResults: [
+    {
+      label: { es: "MTTR (Time to Repair)", en: "MTTR (Time to Repair)" },
+      before: "180min",
+      after: "25min",
+      improvementPercentage: "-86.1%",
+    },
+    {
+      label: { es: "Consistencia de Datos", en: "Data Consistency" },
+      before: "62%",
+      after: "100%",
+      improvementPercentage: "+38%",
+    },
+  ],
+  observabilityStack: ["Serilog Structured Logging", "EF Core Auditing", "AuditRecord Logs"],
+  systemStack: [".NET 8", "PostgreSQL", "Entity Framework Core", "Cloudinary SDK", "FluentValidation", "Docker"],
+  keyTakeaways: [
+    {
+      es: "La arquitectura basada en proyectos (`Domain`, `Application`, `Infrastructure`, `Web`) permitió que el equipo desarrollara en paralelo sin conflictos de merge en la lógica central.",
+      en: "Project-based architecture (`Domain`, `Application`, `Infrastructure`, `Web`) enabled parallel development without merge conflicts in the core logic.",
+    },
+    {
+      es: "El uso de Interfaces en 'Application.Services.Interfaces' facilitó la creación de mocks para Unit Testing con una cobertura del 90%.",
+      en: "The use of Interfaces in 'Application.Services.Interfaces' facilitated mock creation for Unit Testing with 90% coverage.",
+    },
+    {
+      es: "Razor Pages demostró ser superior para herramientas internas de administración por su bajo overhead de JS y seguridad intrínseca.",
+      en: "Razor Pages proved superior for internal admin tools due to low JS overhead and intrinsic security.",
+    },
+  ],
+}

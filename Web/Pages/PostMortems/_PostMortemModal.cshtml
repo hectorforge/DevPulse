@@ -1,0 +1,61 @@
+@model Web.ViewModels.PostMortem.PostMortemFormViewModel
+@{
+    var currentTitle = ViewData["CurrentIncidentTitle"]?.ToString() ?? "Incidente vinculado";
+}
+
+<form asp-page-handler="@(Model.IsEdit ? "Edit" : "Create")" id="postMortemForm" method="post">
+    @Html.AntiForgeryToken()
+    <div class="modal-header @(Model.IsEdit ? "bg-warning text-dark" : "bg-success text-white")">
+        <h5 class="modal-title">
+            <i class="bi @(Model.IsEdit ? "bi-pencil-square" : "bi-journal-plus")"></i>
+            @(Model.IsEdit ? "Editar Análisis" : "Nuevo Análisis Post-Mortem")
+        </h5>
+        <button type="button" class="btn-close @(Model.IsEdit ? "" : "btn-close-white")" data-bs-dismiss="modal"></button>
+    </div>
+
+    <div class="modal-body">
+        @if (Model.IsEdit) { <input type="hidden" asp-for="Id" /> }
+        
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <label asp-for="IncidentId" class="form-label fw-bold small text-uppercase">Incidente Relacionado</label>
+                @if (Model.IsEdit)
+                {
+                    <input type="hidden" asp-for="IncidentId" />
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-link-45deg"></i></span>
+                        <input class="form-control bg-light" value="@currentTitle" readonly />
+                    </div>
+                }
+                else
+                {
+                    <select asp-for="IncidentId" class="form-select form-select-lg shadow-sm" 
+                            asp-items="Model.IncidentOptions">
+                        <option value="">-- Seleccione el Incidente --</option>
+                    </select>
+                }
+                <span asp-validation-for="IncidentId" class="text-danger small"></span>
+            </div>
+            
+            <div class="col-md-12 mb-3">
+                <label asp-for="RootCause" class="form-label fw-bold small text-uppercase">Análisis de Causa Raíz</label>
+                <textarea asp-for="RootCause" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="RootCause" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-12 mb-3">
+                <label asp-for="LessonsLearned" class="form-label fw-bold small text-uppercase">Lecciones Aprendidas</label>
+                <textarea asp-for="LessonsLearned" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="LessonsLearned" class="text-danger small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer bg-light border-0">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn @(Model.IsEdit ? "btn-warning" : "btn-success") px-4 shadow-sm">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            @(Model.IsEdit ? "Guardar Cambios" : "Finalizar Análisis")
+        </button>
+    </div>
+</form>

@@ -45,3 +45,8 @@ public record IncidentQueryDto(
     Severity? severity, 
     int page,
     int size);
+    
+public record IncidentSelectDto(
+    Guid Id,
+    string RootCause
+);

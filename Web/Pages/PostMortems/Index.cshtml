@@ -1,0 +1,165 @@
+@page "/postmortems"
+@model Web.Pages.PostMortems.IndexModel
+@{
+    ViewData["Title"] = "Análisis Post-Mortem";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-journal-check text-success"></i> Análisis Post-Mortem</h1>
+            <p class="text-muted">Lecciones aprendidas y análisis de causa raíz.</p>
+        </div>
+        <button type="button" class="btn btn-success btn-lg shadow-sm" onclick="openModal('@Url.Page("./Index", "CreateModal")')">
+            <i class="bi bi-plus-lg"></i> Nuevo Análisis
+        </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body bg-light rounded">
+            <form id="filterForm" method="get" class="row g-3">
+                <input type="hidden" asp-for="CurrentPage" id="currentPageInput" />
+                <div class="col-md-9">
+                    <label class="form-label fw-bold">Buscar por Causa Raíz</label>
+                    <input asp-for="SearchRootCause" class="form-control" id="searchNameInput" placeholder="Ej: Error de configuración..." />
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-dark w-100">Filtrar</button>
+                    <a href="/postmortems" class="btn btn-outline-secondary w-100">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="tableContainer" class="card shadow-sm border-0">
+        <partial name="_PostMortemList" model="Model" />
+    </div>
+</div>
+
+<!-- Modal Unificado -->
+<div class="modal fade" id="formModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" id="modalContent">
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const modalElement = document.getElementById('formModal');
+        const modal = new bootstrap.Modal(modalElement);
+        const modalBody = document.getElementById('modalContent');
+        const tableContainer = document.getElementById('tableContainer');
+        const filterForm = document.getElementById('filterForm');
+
+        const loadTable = async () => {
+            tableContainer.style.opacity = '0.5';
+            const formData = new URLSearchParams(new FormData(filterForm));
+            formData.set('isPartial', 'true');
+            try {
+                const response = await fetch(`?${formData.toString()}`);
+                const html = await response.text();
+                tableContainer.innerHTML = html;
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'No se pudo actualizar la tabla', 'error');
+            } finally {
+                tableContainer.style.opacity = '1';
+            }
+        };
+
+        const changePage = (page) => {
+            document.getElementById('currentPageInput').value = page;
+            loadTable();
+        };
+        
+        filterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            document.getElementById('currentPageInput').value = 1;
+            loadTable();
+        });
+        
+        const openModal = async (url) => {
+            modalBody.innerHTML = `
+                <div class="p-5 text-center">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2">Cargando formulario...</p>
+                </div>`;
+            modal.show();
+
+            try {
+                const response = await fetch(url);
+                const html = await response.text();
+                modalBody.innerHTML = html;
+                
+                const form = modalBody.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', handleFormSubmit);
+                }
+            } catch (err) {
+                Swal.fire('Error', 'No se pudo cargar el formulario', 'error');
+            }
+        };
+
+        const handleFormSubmit = async (e) => {
+            e.preventDefault();
+            const form = e.currentTarget;
+            const formData = new FormData(form);
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'RequestVerificationToken': token }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    modal.hide();
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Completado',
+                        text: result.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    loadTable();
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    renderErrors(result.message, result.errors);
+                }
+            } catch (err) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                Swal.fire('Error', 'Error de red o de servidor', 'error');
+            }
+        };
+
+        const renderErrors = (message, errors) => {
+            document.querySelectorAll('.text-danger.field-validation-error').forEach(el => el.innerText = '');
+            
+            if (errors) {
+                Object.entries(errors).forEach(([key, value]) => {
+                    const span = document.querySelector(`[data-valmsg-for="${key}"]`) || 
+                                 document.querySelector(`[data-valmsg-for="input.${key}"]`);
+                    if (span) span.innerText = value;
+                });
+            }
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'No se pudo procesar',
+                text: message || 'Revisa los campos del formulario.'
+            });
+        };
+    </script>
+}

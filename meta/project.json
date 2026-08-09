@@ -1,0 +1,168 @@
+{
+  id: "devpulse-enterprise-incident",
+  slug: "devpulse-enterprise-incident",
+  title: {
+    es: "DEVPULSE: ECOSISTEMA DE RESILIENCIA Y GESTIÓN DE INCIDENTES",
+    en: "DEVPULSE: RESILIENCE ECOSYSTEM & INCIDENT MANAGEMENT",
+  },
+  subtitle: {
+    es: "Arquitectura Clean de alto rendimiento para el ciclo de vida de fallos críticos, orquestación de equipos y análisis forense técnico.",
+    en: "High-performance Clean Architecture for critical fault lifecycle, team orchestration, and technical forensic analysis.",
+  },
+  description: {
+    es: "DevPulse es una solución integral de grado empresarial que automatiza la respuesta ante incidentes tecnológicos. Utiliza .NET 8/9 bajo un enfoque de Clean Architecture para garantizar que las reglas de negocio (Domain) sean totalmente independientes de los detalles de implementación (Infrastructure). El sistema orquestra desde la ingesta de alertas y asignación dinámica de ingenieros, hasta la persistencia de evidencia visual en la nube y la creación de reportes Post-Mortem detallados para el cumplimiento de SLAs y mejora continua.",
+    en: "DevPulse is a comprehensive enterprise-grade solution that automates technological incident response. Built on .NET 8/9 using a Clean Architecture approach, it ensures that business rules (Domain) remain fully independent of implementation details (Infrastructure). The system orchestrates everything from alert ingestion and dynamic engineer assignment to cloud-based visual evidence persistence and detailed Post-Mortem reporting for SLA compliance and continuous improvement.",
+  },
+  problemSolved: {
+    es: "Centralizó el flujo fragmentado de reportes técnicos, eliminando la pérdida de evidencia visual mediante el desacoplamiento del almacenamiento y reduciendo drásticamente el MTTR (Mean Time To Repair) gracias a una validación estricta de datos y un motor de búsqueda eficiente de causas raíz.",
+    en: "Centralized fragmented technical reporting workflows, eliminating visual evidence loss through storage decoupling and drastically reducing MTTR (Mean Time To Repair) via strict data validation and an efficient root cause search engine.",
+  },
+  category: "C# .NET / Enterprise Software",
+  filterTag: ".NET",
+  status: {
+    es: "ESTABLE v1.0",
+    en: "STABLE v1.0",
+  },
+  architecture: "Clean Architecture (4-Layers) + Domain Driven Design (DDD) + SSR",
+  stack: [".NET 8", "Razor Pages", "PostgreSQL", "Entity Framework Core", "Docker", "Cloudinary", "FluentValidation", "Serilog"],
+  topDependencies: [
+    {
+      name: "Npgsql.EntityFrameworkCore.PostgreSQL",
+      version: "8.0.10",
+      purpose: {
+        es: "Persistencia reactiva y optimización de consultas relacionales para grandes volúmenes de incidentes.",
+        en: "Reactive persistence and relational query optimization for high-volume incident tracking.",
+      },
+    },
+    {
+      name: "FluentValidation.DependencyInjection",
+      version: "12.1.1",
+      purpose: {
+        es: "Garantía de integridad de datos mediante validación desacoplada en el pipeline de creación de incidentes.",
+        en: "Data integrity assurance via decoupled validation within the incident creation pipeline.",
+      },
+    },
+    {
+      name: "CloudinaryDotNet",
+      version: "1.29.2",
+      purpose: {
+        es: "Abstracción del almacenamiento de evidencia visual (screenshots) para análisis forense de fallos.",
+        en: "Abstraction of visual evidence storage (screenshots) for technical fault forensics.",
+      },
+    },
+  ],
+  useCases: [
+    {
+      es: "Gestión unificada de incidentes (IIncidentService) desde el reporte hasta la resolución definitiva.",
+      en: "Unified incident management (IIncidentService) from initial reporting to final resolution.",
+    },
+    {
+      es: "Documentación y filtrado de lecciones aprendidas (IPostMortemService) basado en causas raíz.",
+      en: "Documentation and filtering of lessons learned (IPostMortemService) based on root cause analysis.",
+    },
+    {
+      es: "Administración jerárquica de roles y responsabilidades (ITeamMemberService) para equipos de SRE.",
+      en: "Hierarchical administration of roles and responsibilities (ITeamMemberService) for SRE teams.",
+    },
+    {
+      es: "Almacenamiento persistente y seguro de evidencia multimedia (IFileStorageService) en infraestructura cloud.",
+      en: "Secure and persistent multimedia evidence storage (IFileStorageService) across cloud infrastructure.",
+    },
+  ],
+  responsibilities: [
+    {
+      es: "Diseño de interfaces de servicio asíncronas para garantizar una UI no bloqueante en Razor Pages.",
+      en: "Design of asynchronous service interfaces to ensure non-blocking UI in Razor Pages.",
+    },
+    {
+      es: "Implementación del patrón Result<T> para el control de flujo funcional y manejo de errores sin excepciones costosas.",
+      en: "Implementation of the Result<T> pattern for functional flow control and exception-free error handling.",
+    },
+    {
+      es: "Mapeo manual de DTOs altamente eficiente para optimizar el paso de datos entre las capas de Application y Web.",
+      en: "Highly efficient manual DTO mapping to optimize data transfer between Application and Web layers.",
+    },
+    {
+      es: "Orquestación de contenedores Docker para un entorno de desarrollo reproducible con PostgreSQL.",
+      en: "Docker container orchestration for a reproducible development environment with PostgreSQL.",
+    },
+  ],
+  keyChallenges: [
+    {
+      challenge: {
+        es: "Separar la lógica de negocio de la complejidad del almacenamiento de terceros (Cloudinary).",
+        en: "Separating business logic from third-party storage complexity (Cloudinary).",
+      },
+      solution: {
+        es: "Creación de la abstracción IFileStorageService, permitiendo que el dominio ignore la implementación física del guardado de archivos.",
+        en: "Created the IFileStorageService abstraction, allowing the domain to ignore the physical implementation of file saving.",
+      },
+    },
+    {
+      challenge: {
+        es: "Manejar la integridad referencial entre incidentes, miembros del equipo y post-mortems en un entorno de alta concurrencia.",
+        en: "Managing referential integrity between incidents, team members, and post-mortems in high-concurrency environments.",
+      },
+      solution: {
+        es: "Uso de validadores FluentValidation automáticos y transacciones atómicas gestionadas por EF Core.",
+        en: "Used automatic FluentValidation validators and atomic transactions managed by EF Core.",
+      },
+    },
+    {
+      "challenge": {
+        "es": "Implementar una UI no bloqueante con JavaScript vanilla, sin librerías externas, permitiendo actualizar únicamente las secciones necesarias de la vista mediante respuestas parciales del backend en C#.",
+        "en": "Implementing a non-blocking UI with vanilla JavaScript, without external libraries, allowing only the necessary sections of the view to be updated through partial responses from the C# backend."
+      },
+      "solution": {
+        "es": "Implementación de actualizaciones parciales mediante JavaScript vanilla y endpoints en C#, devolviendo únicamente los fragmentos de la vista que necesitan actualizarse, evitando recargas completas de la página y manteniendo una experiencia de usuario fluida.",
+        "en": "Implemented partial updates using vanilla JavaScript and C# endpoints, returning only the view fragments that need to be updated, avoiding full page reloads and providing a smoother user experience."
+      }
+    }
+  ],
+  metrics: [
+    {
+      label: { 
+        es: "Tiempo de Respuesta API", 
+        en: "API Response Time"
+      },
+      value: "<15ms",
+    },
+    {
+      label: { 
+        es: "Eficiencia de MTTR", 
+        en: "MTTR Efficiency"
+      },
+      value: "+45%",
+    },
+    {
+      label: { 
+        es: "Cobertura de Validadores", 
+        en: "Validator Coverage"
+      },
+      value: "100%",
+    },
+  ],
+  images: [
+    {
+      url: "/images/projects/devpulse/dashboard.png",
+      name: { es: "Panel de Control de Incidentes", en: "Incident Control Panel" },
+      description: {
+        es: "Visualización en tiempo real de incidentes activos filtrados por severidad y estado.",
+        en: "Real-time visualization of active incidents filtered by severity and status.",
+      },
+      order: 1,
+    },
+    {
+      url: "/images/projects/devpulse/postmortem.png",
+      name: { es: "Módulo de Post-Mortem", en: "Post-Mortem Module" },
+      description: {
+        es: "Interfaz de documentación técnica para el análisis de causa raíz y acciones preventivas.",
+        en: "Technical documentation interface for root cause analysis and preventive actions.",
+      },
+      order: 2,
+    },
+  ],
+  repositoryUrl: "https://github.com/hectorforge/Devpulse",
+  livePreviewUrl: "https://devpulse-demo.hector.dev",
+  caseStudyId: "vol-a001-devpulse-clean-architecture",
+}
