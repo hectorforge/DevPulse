@@ -144,7 +144,16 @@
   ],
   images: [
     {
-      url: "/images/projects/devpulse/dashboard.png",
+      url: "images/main.png",
+      name: { es: "Prev", en: "Prev" },
+      description: {
+        es: "Esto es la prev principal de esta app.",
+        en: "This is a main prev of this app.",
+      },
+      order: 0,
+    },
+    {
+      url: "images/dash.png",
       name: { es: "Panel de Control de Incidentes", en: "Incident Control Panel" },
       description: {
         es: "Visualización en tiempo real de incidentes activos filtrados por severidad y estado.",
@@ -153,7 +162,7 @@
       order: 1,
     },
     {
-      url: "/images/projects/devpulse/postmortem.png",
+      url: "images/incidentes-module.png",
       name: { es: "Módulo de Post-Mortem", en: "Post-Mortem Module" },
       description: {
         es: "Interfaz de documentación técnica para el análisis de causa raíz y acciones preventivas.",

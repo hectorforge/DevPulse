@@ -1,0 +1,32 @@
+@model Application.DTOs.PostMortemDto
+
+<form asp-page-handler="Delete" id="postMortemDeleteForm" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id" />
+    
+    <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Eliminar Análisis Post-Mortem
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    
+    <div class="modal-body text-center py-4">
+        <i class="bi bi-trash3 text-danger mb-3" style="font-size: 3rem;"></i>
+        <p class="fs-5">¿Estás seguro de que deseas eliminar este análisis?</p>
+        <div class="bg-light p-3 rounded border">
+            <small class="text-muted d-block text-uppercase fw-bold">Causa Raíz:</small>
+            <span class="fw-bold text-dark">@Model.RootCause</span>
+        </div>
+        <p class="text-danger mt-3 mb-0 small">
+            <i class="bi bi-info-circle"></i> Esta acción no se puede deshacer.
+        </p>
+    </div>
+    
+    <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-danger px-4">
+            <i class="bi bi-trash"></i> Sí, eliminar
+        </button>
+    </div>
+</form>

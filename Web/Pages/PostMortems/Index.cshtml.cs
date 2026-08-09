@@ -39,7 +39,6 @@ public class IndexModel : PageModel
     }
 
     #region Modales
-
     public async Task<PartialViewResult> OnGetCreateModal()
     {
         var incidents = await _incidentService.SearchForSelect(null, 20);
@@ -109,7 +108,11 @@ public class IndexModel : PageModel
     public async Task<IActionResult> OnPostDelete(Guid id)
     {
         var result = await _postMortemService.Delete(id);
-        return new JsonResult(new { success = result.IsSuccess, message = result.Message });
+        
+        return new JsonResult(new { 
+            success = result.IsSuccess, 
+            message = result.Message 
+        });
     }
 
     #endregion
